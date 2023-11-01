@@ -1,18 +1,3 @@
-#### Serial connection
-
-| TTL converter | BBB (J1 header)  |
-|---------------|------------------|
-|      GND      |     GND (J1:1)   |
-|      TX       |     RX (J1:4)    |
-|      RX       |     TX (J1:5)    |
-
-NOTE: 
-
-- default baudrate: 115200
-- format: 8N1
-- user name: debian
-- password: temppwd
-
 #### Kernel compilation steps
 
 1. Remove all the temporary folder, object files, images generated during the previous build. 
