@@ -134,14 +134,14 @@ static struct device* device_pcd;
 /* init entry point */
 static int __init moduleInit(void)
 {
-    int res;
+    int ret;
 
     /* 1. Dynamically alocate a device number */
-    res = alloc_chrdev_region(&m_device_number, 0, 1, "custom-device");
-    if (res)
+    ret = alloc_chrdev_region(&m_device_number, 0, 1, "custom-device");
+    if (ret < 0)
     {
         pr_info("Failed to allocate device number\n");
-        return res;
+        goto err_cdev_alloc;
     }
 
     pr_info("Device Number <major>:<minor> = %d:%d\n", MAJOR(m_device_number), MINOR(m_device_number));
@@ -151,32 +151,46 @@ static int __init moduleInit(void)
 
     /* 3. Register a device with VFS */
     m_cdev.owner = THIS_MODULE;
-    res = cdev_add(&m_cdev, m_device_number, 1);
-    if (res)
+    ret = cdev_add(&m_cdev, m_device_number, 1);
+    if (ret < 0)
     {
         pr_info("Failed to add char driver\n");
-        return res;
+        goto err_cdev_add;
     }
     
     /* create device class under /sys/class */
     class_pcd = class_create(THIS_MODULE, "pcd_class");
-    if (class_pcd == NULL)
+    if (IS_ERR(class_pcd))
     {
-        pr_info("Failed to create class\n");
-        return -1;
+        pr_err("Failed to create class\n");
+        ret = PTR_ERR(class_pcd);
+        goto err_cdev_class;
     }    
 
     /* populate device class with device info */
     device_pcd = device_create(class_pcd, NULL, m_device_number, NULL, "pcd");
-    if (device_pcd == NULL)
+    if (IS_ERR(device_pcd))
     {
-        pr_info("Failed to create device\n");
-        return -2;
+        pr_err("Failed to create device\n");
+        ret = PTR_ERR(class_pcd);
+        goto err_cdev_create;
     }
 
     pr_info("Module init completed\n");
 
     return 0;
+
+err_cdev_create: 
+    class_destroy(class_pcd);
+
+err_cdev_class: 
+    cdev_del(&m_cdev);
+
+err_cdev_add:
+    unregister_chrdev_region(m_device_number, 1);
+
+err_cdev_alloc:
+    return ret;
 }
 
 /* cleanup entry point */
