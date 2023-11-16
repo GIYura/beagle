@@ -7,19 +7,119 @@
 #include <linux/kdev_t.h>
 #include <linux/uaccess.h>
 
-#define DEV_MEM_SIZE 512
-
 #undef pr_fmt
 #define pr_fmt(fmt) "%s : " fmt,__func__
  
-static char m_device_buffer[DEV_MEM_SIZE];
-static dev_t m_device_number;           /* stores device number */
-static struct cdev m_cdev;              /* cdev variable */
+#define MEM_SIZE_MAX_PCDEV_1    1024
+#define MEM_SIZE_MAX_PCDEV_2    512
+#define MEM_SIZE_MAX_PCDEV_3    1024
+#define MEM_SIZE_MAX_PCDEV_4    512
+
+#define DEV_NUM_MAX             4
+
+/* permission codes */
+#define RDONLY  0x01
+#define WRONLY  0X10
+#define RDWR    0x11
+
+/* device's memory */
+static char m_device_buffer_1[MEM_SIZE_MAX_PCDEV_1];
+static char m_device_buffer_2[MEM_SIZE_MAX_PCDEV_2];
+static char m_device_buffer_3[MEM_SIZE_MAX_PCDEV_3];
+static char m_device_buffer_4[MEM_SIZE_MAX_PCDEV_4];
+
+/* device private data */
+struct pcdev_private_data
+{
+    char* buffer;
+    unsigned int size;
+    const char* serialNumber;
+    int perm;
+    struct cdev cdev; 
+};
+
+/* driver private data */
+struct pcdrv_private_data
+{
+    int devNumber;
+    dev_t device_number;           /* stores device number */
+    struct class* class_pcd;
+    struct device* device_pcd; 
+    struct pcdev_private_data pcdev_data[DEV_NUM_MAX];
+};
+
+static struct pcdrv_private_data m_pcdrv_data = 
+{
+    .devNumber = DEV_NUM_MAX,
+    .pcdev_data = {
+                        [0] = {
+                            .buffer = m_device_buffer_1,
+                            .size = MEM_SIZE_MAX_PCDEV_1,
+                            .serialNumber = "PCDEV-01",
+                            .perm = RDONLY, /* read-only */
+                          },
+
+                        [1] = {
+                            .buffer = m_device_buffer_2,
+                            .size = MEM_SIZE_MAX_PCDEV_2,
+                            .serialNumber = "PCDEV-02",
+                            .perm = WRONLY, /* write-only */
+                          },
+
+                        [2] = {
+                            .buffer = m_device_buffer_3,
+                            .size = MEM_SIZE_MAX_PCDEV_3,
+                            .serialNumber = "PCDEV-03",
+                            .perm = RDWR, /* read-write */
+                          },
+
+                        [3] = {
+                            .buffer = m_device_buffer_4,
+                            .size = MEM_SIZE_MAX_PCDEV_4,
+                            .serialNumber = "PCDEV-04",
+                            .perm = RDWR, /* read-write */
+                          },
+                  }
+};
+
+static int check_permission(int dev_perm, int acc_mode)
+{
+    if (dev_perm == RDWR)
+        return 0;
+    
+    /* ensures readonly access */
+    if ( (dev_perm == RDONLY) && ((acc_mode & FMODE_READ) && !(acc_mode & FMODE_WRITE)) )
+        return 0;
+    
+    /* ensures writeonly access */
+    if ( (dev_perm == WRONLY) && ((acc_mode & FMODE_WRITE) && !(acc_mode & FMODE_READ)) )
+        return 0;
+
+    return -EPERM;
+}
 
 static int pcd_open(struct inode *inode, struct file *filp)
 {
-    pr_info("open was successful\n");
-    return 0;
+    int ret = 0;
+    int minor = 0;
+    struct pcdev_private_data *pcdev_data;
+
+    /* find out on which device file open was attempted by the user */
+    minor = MINOR(inode->i_rdev);
+    pr_info("minor access = %d\n", minor);
+
+    /* get device's private data structure */
+    pcdev_data = container_of(inode->i_cdev, struct pcdev_private_data, cdev);
+
+    /* supply device private data to other methods of the driver */
+    filp->private_data = pcdev_data;
+
+    /* check permission */
+    ret = check_permission(pcdev_data->perm, filp->f_mode);
+
+    (ret) ? pr_info("Failed to open\n") : pr_info("Open successfull\n");
+
+    return ret;
 }
 
 static int pcd_release(struct inode *inode, struct file *flip)
@@ -30,15 +130,18 @@ static int pcd_release(struct inode *inode, struct file *flip)
 
 static ssize_t pcd_read(struct file *filp, char __user *buff, size_t count, loff_t *f_pos)
 {
+    struct pcdev_private_data *pcdev_data = (struct pcdev_private_data*)filp->private_data;
+    int max_size = pcdev_data->size;
+
     pr_info("Read requested for %zu bytes \n", count);
     pr_info("Current file position = %lld\n", *f_pos);
     
     /* adjust the count */
-    if (*f_pos + count > DEV_MEM_SIZE)
-        count  = DEV_MEM_SIZE - *f_pos;
+    if (*f_pos + count > max_size)
+        count = max_size - *f_pos;
 
     /* copy to user */
-    if (copy_to_user(buff, &m_device_buffer[*f_pos], count))
+    if (copy_to_user(buff, pcdev_data->buffer + (*f_pos), count))
         return -EFAULT;
 
     /* update current file position */
@@ -53,12 +156,15 @@ static ssize_t pcd_read(struct file *filp, char __user *buff, size_t count, loff
 
 static ssize_t pcd_write(struct file *filp, const char __user *buff, size_t count, loff_t *f_pos)
 {
+    struct pcdev_private_data *pcdev_data = (struct pcdev_private_data*)filp->private_data;
+    int max_size = pcdev_data->size;
+
     pr_info("Write requested for %zu bytes\n",count);
     pr_info("Current file position = %lld\n",*f_pos);
 
     /* adjust the count */
-    if ((*f_pos + count) > DEV_MEM_SIZE)
-        count = DEV_MEM_SIZE - *f_pos;
+    if ((*f_pos + count) > max_size)
+        count = max_size - *f_pos;
 
     if (!count)
     {
@@ -67,7 +173,7 @@ static ssize_t pcd_write(struct file *filp, const char __user *buff, size_t coun
     }
 
     /* copy from user */
-    if (copy_from_user(&m_device_buffer[*f_pos], buff, count))
+    if (copy_from_user(pcdev_data->buffer + (*f_pos), buff, count))
         return -EFAULT;
 
     /* update the current file postion */
@@ -82,6 +188,8 @@ static ssize_t pcd_write(struct file *filp, const char __user *buff, size_t coun
 
 static loff_t pcd_lseek(struct file *filp, loff_t offset, int whence)
 {
+    struct pcdev_private_data *pcdev_data = (struct pcdev_private_data*)filp->private_data;
+    int max_size = pcdev_data->size;
     loff_t temp;
 
     pr_info("lseek requested \n");
@@ -90,21 +198,21 @@ static loff_t pcd_lseek(struct file *filp, loff_t offset, int whence)
     switch (whence)
     {
         case SEEK_SET:
-            if ((offset > DEV_MEM_SIZE) || (offset < 0))
+            if ((offset > max_size) || (offset < 0))
                 return -EINVAL;
             filp->f_pos = offset;
             break;
 
         case SEEK_CUR:
             temp = filp->f_pos + offset;
-            if ((temp > DEV_MEM_SIZE) || (temp < 0))
+            if ((temp > max_size) || (temp < 0))
                 return -EINVAL;
             filp->f_pos = temp;
             break;
 
         case SEEK_END:
-            temp = DEV_MEM_SIZE + offset;
-            if ((temp > DEV_MEM_SIZE) || (temp < 0))
+            temp = max_size + offset;
+            if ((temp > max_size) || (temp < 0))
                 return -EINVAL;
             filp->f_pos = temp;
             break;
@@ -128,52 +236,54 @@ static struct file_operations m_fops =    /* file operations for the driver */
     .owner = THIS_MODULE
 };
 
-static struct class* class_pcd;
-static struct device* device_pcd; 
 
 /* init entry point */
 static int __init moduleInit(void)
 {
-    int ret;
+    int ret = 0;
+    u8 i = 0;
 
-    /* 1. Dynamically alocate a device number */
-    ret = alloc_chrdev_region(&m_device_number, 0, 1, "custom-device");
+    /* Dynamically alocate a device number */
+    ret = alloc_chrdev_region(&m_pcdrv_data.device_number, 0, DEV_NUM_MAX, "pcdevs");
     if (ret < 0)
     {
         pr_info("Failed to allocate device number\n");
         goto err_cdev_alloc;
     }
 
-    pr_info("Device Number <major>:<minor> = %d:%d\n", MAJOR(m_device_number), MINOR(m_device_number));
-
-    /* 2. Initialize the cdev struct with file operations */
-    cdev_init(&m_cdev, &m_fops);
-
-    /* 3. Register a device with VFS */
-    m_cdev.owner = THIS_MODULE;
-    ret = cdev_add(&m_cdev, m_device_number, 1);
-    if (ret < 0)
-    {
-        pr_info("Failed to add char driver\n");
-        goto err_cdev_add;
-    }
-    
     /* create device class under /sys/class */
-    class_pcd = class_create(THIS_MODULE, "pcd_class");
-    if (IS_ERR(class_pcd))
+    m_pcdrv_data.class_pcd = class_create(THIS_MODULE, "pcd_class");
+    if (IS_ERR(m_pcdrv_data.class_pcd))
     {
         pr_err("Failed to create class\n");
-        ret = PTR_ERR(class_pcd);
+        ret = PTR_ERR(m_pcdrv_data.class_pcd);
         goto err_cdev_class;
-    }    
-
-    /* populate device class with device info */
-    device_pcd = device_create(class_pcd, NULL, m_device_number, NULL, "pcd");
-    if (IS_ERR(device_pcd))
+    }
+    
+    for (i = 0; i < DEV_NUM_MAX; i++)
     {
-        pr_err("Failed to create device\n");
-        ret = PTR_ERR(class_pcd);
-        goto err_cdev_create;
+        pr_info("Device number <major>:<minor> = %d:%d\n", MAJOR(m_pcdrv_data.device_number + i), MINOR(m_pcdrv_data.device_number + i));
+
+        /* Initialize the cdev struct with file operations */
+        cdev_init(&m_pcdrv_data.pcdev_data[i].cdev, &m_fops);
+
+        /* Register a device with VFS */
+        m_pcdrv_data.pcdev_data[i].cdev.owner = THIS_MODULE;
+        ret = cdev_add(&m_pcdrv_data.pcdev_data[i].cdev, m_pcdrv_data.device_number + i, 1);
+        if (ret < 0)
+        {
+            pr_info("Failed to add char driver\n");
+            goto err_cdev_add;
+        }
+    
+        /* populate device class with device info */
+        m_pcdrv_data.device_pcd = device_create(m_pcdrv_data.class_pcd, NULL, m_pcdrv_data.device_number + i, NULL, "pcdev-%d", i);
+        if (IS_ERR(m_pcdrv_data.device_pcd))
+        {
+            pr_err("Failed to create device\n");
+            ret = PTR_ERR(m_pcdrv_data.device_pcd);
+            goto err_cdev_create;
+        }
     }
 
     pr_info("Module init completed\n");
@@ -181,13 +291,17 @@ static int __init moduleInit(void)
     return 0;
 
 err_cdev_create: 
-    class_destroy(class_pcd);
+err_cdev_class:
 
-err_cdev_class: 
-    cdev_del(&m_cdev);
+    for (; i>= 0; i--)
+    {
+        device_destroy(m_pcdrv_data.class_pcd, m_pcdrv_data.device_number + i);
+        cdev_del(&m_pcdrv_data.pcdev_data[i].cdev);
+    }
+    class_destroy(m_pcdrv_data.class_pcd);
 
 err_cdev_add:
-    unregister_chrdev_region(m_device_number, 1);
+    unregister_chrdev_region(m_pcdrv_data.device_number, DEV_NUM_MAX);
 
 err_cdev_alloc:
     return ret;
@@ -196,10 +310,14 @@ err_cdev_alloc:
 /* cleanup entry point */
 static void __exit moduleExit(void)
 {
-    device_destroy(class_pcd, m_device_number);
-    class_destroy(class_pcd);
-    cdev_del(&m_cdev);
-    unregister_chrdev_region(m_device_number, 1);
+    u8 i = 0;
+    for (i = 0; i>= DEV_NUM_MAX; i++)
+    {
+        device_destroy(m_pcdrv_data.class_pcd, m_pcdrv_data.device_number + i);
+        cdev_del(&m_pcdrv_data.pcdev_data[i].cdev);
+    }
+    class_destroy(m_pcdrv_data.class_pcd);
+    unregister_chrdev_region(m_pcdrv_data.device_number, DEV_NUM_MAX);
 
     pr_info("Module unloaded\n");
 }
@@ -211,6 +329,6 @@ module_exit(moduleExit);
 /* description section */
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Jura");
-MODULE_DESCRIPTION("Psudo-code of device driver");
+MODULE_DESCRIPTION("Psudo-code of device driver for multiple devices");
 MODULE_INFO(board,"Beaglebone black REV C");
 
