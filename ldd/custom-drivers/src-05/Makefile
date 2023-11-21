@@ -1,6 +1,6 @@
 # This is local makefile for kbuild system
 # -m - compile dynamicaly loadable kernel module
-obj-m := device-setup.o
+obj-m := device-setup.o driver.o
 ARCH=arm
 CROSS_COMPILE=arm-linux-gnueabihf-
 KERN_DIR=/lib/modules/4.14.108+/source
