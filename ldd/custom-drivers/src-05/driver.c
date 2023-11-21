@@ -34,8 +34,7 @@ struct device_config pcdev_config[] =
     [PCDEVA1X] = {.config_item1 = 60, .config_item2 = 21},
     [PCDEVB1X] = {.config_item1 = 50, .config_item2 = 22},
     [PCDEVC1X] = {.config_item1 = 40, .config_item2 = 23},
-    [PCDEVD1X] = {.config_item1 = 30, .config_item2 = 24}
-    
+    [PCDEVD1X] = {.config_item1 = 30, .config_item2 = 24}    
 };
 
 /* Device private data structure */
@@ -120,22 +119,22 @@ ssize_t pcd_read(struct file *filp, char __user *buff, size_t count, loff_t *f_p
 
     int max_size = pcdev_data->pdata.size;
 
-    pr_info("Read requested for %zu bytes \n",count);
-    pr_info("Current file position = %lld\n",*f_pos);
+    pr_info("Read requested for %zu bytes \n", count);
+    pr_info("Current file position = %lld\n", *f_pos);
 
     /* Adjust the 'count' */
     if ((*f_pos + count) > max_size)
         count = max_size - *f_pos;
 
     /* copy to user */
-    if (copy_to_user(buff,pcdev_data->buffer+(*f_pos),count))
+    if (copy_to_user(buff, pcdev_data->buffer + (*f_pos), count))
         return -EFAULT;
 
     /* update the current file postion */
     *f_pos += count;
 
-    pr_info("Number of bytes successfully read = %zu\n",count);
-    pr_info("Updated file position = %lld\n",*f_pos);
+    pr_info("Number of bytes successfully read = %zu\n", count);
+    pr_info("Updated file position = %lld\n", *f_pos);
 
     /* Return number of bytes which have been successfully read */
     return count;
@@ -147,8 +146,8 @@ ssize_t pcd_write(struct file *filp, const char __user *buff, size_t count, loff
 
     int max_size = pcdev_data->pdata.size;
     
-    pr_info("Write requested for %zu bytes\n",count);
-    pr_info("Current file position = %lld\n",*f_pos);
+    pr_info("Write requested for %zu bytes\n", count);
+    pr_info("Current file position = %lld\n", *f_pos);
 
     /* Adjust the 'count' */
     if ((*f_pos + count) > max_size)
@@ -161,14 +160,14 @@ ssize_t pcd_write(struct file *filp, const char __user *buff, size_t count, loff
     }
 
     /* copy from user */
-    if (copy_from_user(pcdev_data->buffer+(*f_pos),buff,count))
+    if (copy_from_user(pcdev_data->buffer + (*f_pos), buff, count))
         return -EFAULT;
 
     /* update the current file postion */
     *f_pos += count;
 
-    pr_info("Number of bytes successfully written = %zu\n",count);
-    pr_info("Updated file position = %lld\n",*f_pos);
+    pr_info("Number of bytes successfully written = %zu\n", count);
+    pr_info("Updated file position = %lld\n", *f_pos);
 
     /* Return number of bytes which have been successfully written */
     return count;
@@ -182,16 +181,16 @@ int pcd_open(struct inode *inode, struct file *filp)
 
     /* find out on which device file open was attempted by the user space */
     minor_n = MINOR(inode->i_rdev);
-    pr_info("minor access = %d\n",minor_n);
+    pr_info("minor access = %d\n", minor_n);
 
     /* get device's private data structure */
-    pcdev_data = container_of(inode->i_cdev,struct pcdev_private_data,cdev);
+    pcdev_data = container_of(inode->i_cdev, struct pcdev_private_data, cdev);
 
     /* to supply device private data to other methods of the driver */
     filp->private_data = pcdev_data;
         
     /* check permission */
-    ret = check_permission(pcdev_data->pdata.perm,filp->f_mode);
+    ret = check_permission(pcdev_data->pdata.perm, filp->f_mode);
 
     (!ret) ? pr_info("open was successful\n") : pr_info("open was unsuccessful\n");
 
@@ -222,7 +221,7 @@ int pcd_platform_driver_remove(struct platform_device *pdev)
     struct pcdev_private_data  *dev_data = dev_get_drvdata(&pdev->dev);
 
     /* 1. Remove a device that was created with device_create() */
-    device_destroy(pcdrv_data.class_pcd,dev_data->dev_num);
+    device_destroy(pcdrv_data.class_pcd, dev_data->dev_num);
     
     /* 2. Remove a cdev entry from the system*/
     cdev_del(&dev_data->cdev);
@@ -252,7 +251,7 @@ int pcd_platform_driver_probe(struct platform_device *pdev)
     }
 
     /* Dynamically allocate memory for the device private data  */
-    dev_data = devm_kzalloc(&pdev->dev, sizeof(*dev_data),GFP_KERNEL);
+    dev_data = devm_kzalloc(&pdev->dev, sizeof(*dev_data), GFP_KERNEL);
     if (!dev_data)
     {
         pr_info("Cannot allocate memory \n");
@@ -266,19 +265,19 @@ int pcd_platform_driver_probe(struct platform_device *pdev)
     dev_data->pdata.perm = pdata->perm;
     dev_data->pdata.serial_number = pdata->serial_number;
 
-    pr_info("Device serial number = %s\n",dev_data->pdata.serial_number);
+    pr_info("Device serial number = %s\n", dev_data->pdata.serial_number);
     pr_info("Device size = %d\n", dev_data->pdata.size);
-    pr_info("Device permission = %d\n",dev_data->pdata.perm);
+    pr_info("Device permission = %d\n", dev_data->pdata.perm);
 
-    pr_info("Config item 1 = %d\n",pcdev_config[pdev->id_entry->driver_data].config_item1 );
-    pr_info("Config item 2 = %d\n",pcdev_config[pdev->id_entry->driver_data].config_item2 );
+    pr_info("Config item 1 = %d\n", pcdev_config[pdev->id_entry->driver_data].config_item1);
+    pr_info("Config item 2 = %d\n", pcdev_config[pdev->id_entry->driver_data].config_item2);
 
     /* Dynamically allocate memory for the device buffer using size 
     information from the platform data */
-    dev_data->buffer = devm_kzalloc(&pdev->dev,dev_data->pdata.size,GFP_KERNEL);
+    dev_data->buffer = devm_kzalloc(&pdev->dev, dev_data->pdata.size, GFP_KERNEL);
     if (!dev_data->buffer)
     {
-        pr_info("Cannot allocate memory \n");
+        pr_info("Cannot allocate memory\n");
         return -ENOMEM;
     }
 
@@ -286,10 +285,10 @@ int pcd_platform_driver_probe(struct platform_device *pdev)
     dev_data->dev_num = pcdrv_data.device_num_base + pdev->id;
 
     /* Do cdev init and cdev add */
-    cdev_init(&dev_data->cdev,&pcd_fops);
+    cdev_init(&dev_data->cdev, &pcd_fops);
     
     dev_data->cdev.owner = THIS_MODULE;
-    ret = cdev_add(&dev_data->cdev,dev_data->dev_num,1);
+    ret = cdev_add(&dev_data->cdev, dev_data->dev_num, 1);
     if (ret < 0)
     {
         pr_err("Cdev add failed\n");
@@ -297,7 +296,7 @@ int pcd_platform_driver_probe(struct platform_device *pdev)
     }
 
     /* Create device file for the detected platform device */
-    pcdrv_data.device_pcd = device_create(pcdrv_data.class_pcd,NULL,dev_data->dev_num,NULL,"pcdev-%d",pdev->id);
+    pcdrv_data.device_pcd = device_create(pcdrv_data.class_pcd, NULL, dev_data->dev_num, NULL, "pcdev-%d", pdev->id);
     if (IS_ERR(pcdrv_data.device_pcd))
     {
         pr_err("Device create failed\n");
@@ -316,10 +315,10 @@ int pcd_platform_driver_probe(struct platform_device *pdev)
 
 struct platform_device_id pcdevs_ids[] = 
 {
-    [0] = {.name = "pcdev-A1x",.driver_data = PCDEVA1X},
-    [1] = {.name = "pcdev-B1x",.driver_data = PCDEVB1X},
-    [2] = {.name = "pcdev-C1x",.driver_data = PCDEVC1X},
-    [3] = {.name = "pcdev-D1x",.driver_data = PCDEVD1X},
+    [0] = {.name = "pcdev-A1x", .driver_data = PCDEVA1X},
+    [1] = {.name = "pcdev-B1x", .driver_data = PCDEVB1X},
+    [2] = {.name = "pcdev-C1x", .driver_data = PCDEVC1X},
+    [3] = {.name = "pcdev-D1x", .driver_data = PCDEVD1X},
     { } /*Null termination */
 };
 
@@ -338,7 +337,7 @@ static int __init pcd_platform_driver_init(void)
     int ret;
 
     /* Dynamically allocate a device number for MAX_DEVICES */
-    ret = alloc_chrdev_region(&pcdrv_data.device_num_base,0,MAX_DEVICES,"pcdevs");
+    ret = alloc_chrdev_region(&pcdrv_data.device_num_base, 0, MAX_DEVICES, "pcdevs");
     if (ret < 0)
     {
         pr_err("Alloc chrdev failed\n");
@@ -346,12 +345,12 @@ static int __init pcd_platform_driver_init(void)
     }
 
     /* Create device class under /sys/class */
-    pcdrv_data.class_pcd = class_create(THIS_MODULE,"pcd_class");
+    pcdrv_data.class_pcd = class_create(THIS_MODULE, "pcd_class");
     if (IS_ERR(pcdrv_data.class_pcd))
     {
         pr_err("Class creation failed\n");
         ret = PTR_ERR(pcdrv_data.class_pcd);
-        unregister_chrdev_region(pcdrv_data.device_num_base,MAX_DEVICES);
+        unregister_chrdev_region(pcdrv_data.device_num_base, MAX_DEVICES);
         return ret;
     }
 
@@ -372,7 +371,7 @@ static void __exit pcd_platform_driver_cleanup(void)
     class_destroy(pcdrv_data.class_pcd);
 
     /* Unregister device numbers for MAX_DEVICES */
-    unregister_chrdev_region(pcdrv_data.device_num_base,MAX_DEVICES);
+    unregister_chrdev_region(pcdrv_data.device_num_base, MAX_DEVICES);
     
     pr_info("pcd platform driver unloaded\n");
 }
