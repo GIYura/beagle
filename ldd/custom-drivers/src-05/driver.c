@@ -310,7 +310,6 @@ int pcd_platform_driver_probe(struct platform_device *pdev)
     pr_info("Probe was successful\n");
 
     return 0;
-
 }
 
 struct platform_device_id pcdevs_ids[] = 
