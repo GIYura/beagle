@@ -250,7 +250,7 @@ int pcd_platform_driver_probe(struct platform_device *pdev)
         return -EINVAL;
     }
 
-    /* Dynamically allocate memory for the device private data  */
+    /* Dynamically allocate memory for the device private data */
     dev_data = devm_kzalloc(&pdev->dev, sizeof(*dev_data), GFP_KERNEL);
     if (!dev_data)
     {
@@ -263,9 +263,9 @@ int pcd_platform_driver_probe(struct platform_device *pdev)
 
     dev_data->pdata.size = pdata->size;
     dev_data->pdata.perm = pdata->perm;
-    dev_data->pdata.serial_number = pdata->serial_number;
+    dev_data->pdata.serialNumber = pdata->serialNumber;
 
-    pr_info("Device serial number = %s\n", dev_data->pdata.serial_number);
+    pr_info("Device serial number = %s\n", dev_data->pdata.serialNumber);
     pr_info("Device size = %d\n", dev_data->pdata.size);
     pr_info("Device permission = %d\n", dev_data->pdata.perm);
 
