@@ -218,7 +218,7 @@ struct file_operations pcd_fops=
 /* Called when the device is removed from the system */
 int pcd_platform_driver_remove(struct platform_device *pdev)
 {
-    struct pcdev_private_data  *dev_data = dev_get_drvdata(&pdev->dev);
+    struct pcdev_private_data *dev_data = dev_get_drvdata(&pdev->dev);
 
     /* 1. Remove a device that was created with device_create() */
     device_destroy(pcdrv_data.class_pcd, dev_data->dev_num);
@@ -259,7 +259,7 @@ int pcd_platform_driver_probe(struct platform_device *pdev)
     }
 
     /* save the device private data pointer in platform device structure */
-    dev_set_drvdata(&pdev->dev,dev_data);
+    dev_set_drvdata(&pdev->dev, dev_data);
 
     dev_data->pdata.size = pdata->size;
     dev_data->pdata.perm = pdata->perm;
