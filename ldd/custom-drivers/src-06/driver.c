@@ -7,6 +7,7 @@
 #include <linux/platform_device.h>
 #include <linux/slab.h>
 #include <linux/mod_devicetable.h>
+#include <linux/of.h>
 #include "platform.h"
 
 #undef pr_fmt
@@ -218,6 +219,7 @@ struct file_operations pcd_fops=
 /* Called when the device is removed from the system */
 int pcd_platform_driver_remove(struct platform_device *pdev)
 {
+#if 0
     struct pcdev_private_data *dev_data = dev_get_drvdata(&pdev->dev);
 
     /* 1. Remove a device that was created with device_create() */
@@ -227,9 +229,8 @@ int pcd_platform_driver_remove(struct platform_device *pdev)
     cdev_del(&dev_data->cdev);
 
     pcdrv_data.total_devices--;
-
+#endif
     pr_info("A device is removed\n");
-
     return 0;
 }
 
@@ -237,6 +238,8 @@ int pcd_platform_driver_remove(struct platform_device *pdev)
 int pcd_platform_driver_probe(struct platform_device *pdev)
 {
     int ret;
+    pr_info("A device is detected\n");
+#if 0
     struct pcdev_private_data *dev_data;
     struct pcdev_platform_data *pdata;
 
@@ -308,7 +311,7 @@ int pcd_platform_driver_probe(struct platform_device *pdev)
     pcdrv_data.total_devices++;
 
     pr_info("Probe was successful\n");
-
+#endif
     return 0;
 }
 
@@ -321,13 +324,23 @@ struct platform_device_id pcdevs_ids[] =
     { } /*Null termination */
 };
 
+struct of_device_id org_pcdev_dt_match[] = 
+{
+    { .compatible = "pcdev-A1x", .data = (void*)PCDEVA1X },
+    { .compatible = "pcdev-B1x", .data = (void*)PCDEVB1X },
+    { .compatible = "pcdev-C1x", .data = (void*)PCDEVC1X },
+    { .compatible = "pcdev-D1x", .data = (void*)PCDEVD1X },
+    { }
+};
+
 struct platform_driver pcd_platform_driver = 
 {
     .probe = pcd_platform_driver_probe,
     .remove = pcd_platform_driver_remove,
     .id_table = pcdevs_ids,
     .driver = {
-        .name = "pseudo-char-device"
+        .name = "pseudo-char-device",
+        .of_match_table = org_pcdev_dt_match
     }
 };
 
