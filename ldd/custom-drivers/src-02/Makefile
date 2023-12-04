@@ -3,7 +3,8 @@
 obj-m := driver.o
 ARCH=arm
 CROSS_COMPILE=arm-linux-gnueabihf-
-KERN_DIR=/lib/modules/4.14.108+/source
+#KERN_DIR=/lib/modules/4.14.108+/source
+KERN_DIR=/lib/modules/5.4.106+/source
 
 # make goes to the path /lib/modules/... triggers top level makefile, 
 # which gets the value of M and M points to the current directory.
@@ -16,11 +17,11 @@ clean:
 help:
 	make ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) -C $(KERN_DIR) M=$(PWD) help
 
-load:
-	sudo insmod driver.ko
-	sudo dmesg -c
+#load:
+#	sudo insmod driver.ko
+#	sudo dmesg -c
 
-unload:
-	sudo rmmod driver.ko
-	sudo dmesg -c
+#unload:
+#	sudo rmmod driver.ko
+#	sudo dmesg -c
 

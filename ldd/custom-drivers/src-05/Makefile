@@ -3,7 +3,8 @@
 obj-m := device-setup.o driver.o
 ARCH=arm
 CROSS_COMPILE=arm-linux-gnueabihf-
-KERN_DIR=/lib/modules/4.14.108+/source
+#KERN_DIR=/lib/modules/4.14.108+/source
+KERN_DIR=/lib/modules/5.4.106+/source
 
 # make goes to the path /lib/modules/... triggers top level makefile, 
 # which gets the value of M and M points to the current directory.
