@@ -4,17 +4,45 @@
 #include <linux/fs.h>
 #include <linux/cdev.h>
 #include <linux/device.h>
-#include <linux/kdev_t.h>
+#include <linux/kdev_t.h>   /* описаны макросы MAJOR/MINOR для получения адресов устройства */
 #include <linux/uaccess.h>
 
-#define DEV_MEM_SIZE 512
+#define DEV_MEM_SIZE    512
+#define DEV_NUM_MAX     1
 
 #undef pr_fmt
 #define pr_fmt(fmt) "%s : " fmt,__func__
  
 static char m_device_buffer[DEV_MEM_SIZE];
-static dev_t m_device_number;           /* stores device number */
-static struct cdev m_cdev;              /* cdev variable */
+
+/*
+тип dev_t описан в linux/types.h
+используется для хранения номеров устройств.
+Разрядность 32 бита; 12 бит - мл. адрес; 20 - страший
+*/
+static dev_t m_device_number;
+
+/*
+структура описана в файле cdev.h
+структура, представляющая символьное устройство
+*/
+static struct cdev m_cdev;
+
+/*
+структура описана в /include/linux/device.h
+создает высокоуровневую абстракцию, которая позволяет
+работать с устройствами основываясь что они делают, чем
+как они работают
+*/
+static struct class* class_pcd;
+
+/*
+структура описана в /include/linux/device.h
+базовая структура устройства.
+на низком уровне каждой устройство в Linux это объект 
+базовой структуры устройства.
+*/
+static struct device* device_pcd; 
 
 static int pcd_open(struct inode *inode, struct file *filp)
 {
@@ -53,8 +81,8 @@ static ssize_t pcd_read(struct file *filp, char __user *buff, size_t count, loff
 
 static ssize_t pcd_write(struct file *filp, const char __user *buff, size_t count, loff_t *f_pos)
 {
-    pr_info("Write requested for %zu bytes\n",count);
-    pr_info("Current file position = %lld\n",*f_pos);
+    pr_info("Write requested for %zu bytes\n", count);
+    pr_info("Current file position = %lld\n", *f_pos);
 
     /* adjust the count */
     if ((*f_pos + count) > DEV_MEM_SIZE)
@@ -73,8 +101,8 @@ static ssize_t pcd_write(struct file *filp, const char __user *buff, size_t coun
     /* update the current file postion */
     *f_pos += count;
 
-    pr_info("Number of bytes successfully written = %zu\n",count);
-    pr_info("Updated file position = %lld\n",*f_pos);
+    pr_info("Number of bytes successfully written = %zu\n", count);
+    pr_info("Updated file position = %lld\n", *f_pos);
 
     /* return number of bytes successfully written */
     return count;
@@ -85,7 +113,7 @@ static loff_t pcd_lseek(struct file *filp, loff_t offset, int whence)
     loff_t temp;
 
     pr_info("lseek requested \n");
-    pr_info("Current value of the file position = %lld\n",filp->f_pos);
+    pr_info("Current value of the file position = %lld\n", filp->f_pos);
 
     switch (whence)
     {
@@ -113,7 +141,7 @@ static loff_t pcd_lseek(struct file *filp, loff_t offset, int whence)
             return -EINVAL;
     }
     
-    pr_info("New value of the file position = %lld\n",filp->f_pos);
+    pr_info("New value of the file position = %lld\n", filp->f_pos);
 
     return filp->f_pos;
 }
@@ -128,16 +156,13 @@ static struct file_operations m_fops =    /* file operations for the driver */
     .owner = THIS_MODULE
 };
 
-static struct class* class_pcd;
-static struct device* device_pcd; 
-
 /* init entry point */
 static int __init moduleInit(void)
 {
     int ret;
 
-    /* 1. Dynamically alocate a device number */
-    ret = alloc_chrdev_region(&m_device_number, 0, 1, "custom-device");
+    /* dynamically alocate a device number */
+    ret = alloc_chrdev_region(&m_device_number, 0, DEV_NUM_MAX, "custom-device");
     if (ret < 0)
     {
         pr_info("Failed to allocate device number\n");
@@ -146,19 +171,26 @@ static int __init moduleInit(void)
 
     pr_info("Device Number <major>:<minor> = %d:%d\n", MAJOR(m_device_number), MINOR(m_device_number));
 
-    /* 2. Initialize the cdev struct with file operations */
+    /* initialize the cdev struct with file operations 
+    Инициализация структуры cdev (символьного утсройства) операциями над файлами, 
+    которые поддерживает это устройство
+    location: /fs/char_dev.c
+    */
     cdev_init(&m_cdev, &m_fops);
 
-    /* 3. Register a device with VFS */
+    /* register a device with VFS 
+    Добавление символьного устройства в ядро ч/з VFS.
+    location: /fs/char_dev.c
+    */
     m_cdev.owner = THIS_MODULE;
-    ret = cdev_add(&m_cdev, m_device_number, 1);
+    ret = cdev_add(&m_cdev, m_device_number, DEV_NUM_MAX);
     if (ret < 0)
     {
         pr_info("Failed to add char driver\n");
         goto err_cdev_add;
     }
     
-    /* create device class under /sys/class */
+    /* create device class under /sys/class/<custom-class-name> */
     class_pcd = class_create(THIS_MODULE, "pcd_class");
     if (IS_ERR(class_pcd))
     {
@@ -187,7 +219,7 @@ err_cdev_class:
     cdev_del(&m_cdev);
 
 err_cdev_add:
-    unregister_chrdev_region(m_device_number, 1);
+    unregister_chrdev_region(m_device_number, DEV_NUM_MAX);
 
 err_cdev_alloc:
     return ret;
@@ -196,10 +228,11 @@ err_cdev_alloc:
 /* cleanup entry point */
 static void __exit moduleExit(void)
 {
+    /* cleanup functions are called in reverse order as in init */
     device_destroy(class_pcd, m_device_number);
     class_destroy(class_pcd);
     cdev_del(&m_cdev);
-    unregister_chrdev_region(m_device_number, 1);
+    unregister_chrdev_region(m_device_number, DEV_NUM_MAX);
 
     pr_info("Module unloaded\n");
 }
