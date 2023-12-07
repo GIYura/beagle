@@ -51,3 +51,5 @@ sudo chown [user:group] /path-to-file
 /dev/pcdev-4 - RW
 ```
 
+![driver](https://github.com/GIYura/beagle/tree/main/ldd/custom-drivers/src-03/driver-mult-devs.png)
+
