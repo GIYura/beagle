@@ -28,3 +28,8 @@ cat /dev/pcd - read the string from driver
 sudo rmmod driver.ko
 ```
 
+**NOTE:** change device file access permission:
+```
+sudo chown [user:group] /path-to-file
+```
+
