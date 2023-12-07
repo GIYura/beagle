@@ -39,18 +39,18 @@ struct pcdev_private_data
 };
 
 /* driver private data */
-struct pcdrv_private_data
+struct pcdrv_data
 {
-    int devNumber;
-    dev_t device_number;           /* stores device number */
+    int devCount;                   /* supported device number */
+    dev_t device_number;            /* stores device number */
     struct class* class_pcd;
     struct device* device_pcd; 
     struct pcdev_private_data pcdev_data[DEV_NUM_MAX];
 };
 
-static struct pcdrv_private_data m_pcdrv_data = 
+static struct pcdrv_data m_pcdrv_data = 
 {
-    .devNumber = DEV_NUM_MAX,
+    .devCount = DEV_NUM_MAX,
     .pcdev_data = {
                         [0] = {
                             .buffer = m_device_buffer_1,
@@ -159,8 +159,8 @@ static ssize_t pcd_write(struct file *filp, const char __user *buff, size_t coun
     struct pcdev_private_data *pcdev_data = (struct pcdev_private_data*)filp->private_data;
     int max_size = pcdev_data->size;
 
-    pr_info("Write requested for %zu bytes\n",count);
-    pr_info("Current file position = %lld\n",*f_pos);
+    pr_info("Write requested for %zu bytes\n", count);
+    pr_info("Current file position = %lld\n", *f_pos);
 
     /* adjust the count */
     if ((*f_pos + count) > max_size)
@@ -179,7 +179,7 @@ static ssize_t pcd_write(struct file *filp, const char __user *buff, size_t coun
     /* update the current file postion */
     *f_pos += count;
 
-    pr_info("Number of bytes successfully written = %zu\n",count);
+    pr_info("Number of bytes successfully written = %zu\n", count);
     pr_info("Updated file position = %lld\n",*f_pos);
 
     /* return number of bytes successfully written */
@@ -193,7 +193,7 @@ static loff_t pcd_lseek(struct file *filp, loff_t offset, int whence)
     loff_t temp;
 
     pr_info("lseek requested \n");
-    pr_info("Current value of the file position = %lld\n",filp->f_pos);
+    pr_info("Current value of the file position = %lld\n", filp->f_pos);
 
     switch (whence)
     {
@@ -221,7 +221,7 @@ static loff_t pcd_lseek(struct file *filp, loff_t offset, int whence)
             return -EINVAL;
     }
     
-    pr_info("New value of the file position = %lld\n",filp->f_pos);
+    pr_info("New value of the file position = %lld\n", filp->f_pos);
 
     return filp->f_pos;
 }
@@ -311,7 +311,7 @@ err_cdev_alloc:
 static void __exit moduleExit(void)
 {
     u8 i = 0;
-    for (i = 0; i>= DEV_NUM_MAX; i++)
+    for (i = 0; i < DEV_NUM_MAX; i++)
     {
         device_destroy(m_pcdrv_data.class_pcd, m_pcdrv_data.device_number + i);
         cdev_del(&m_pcdrv_data.pcdev_data[i].cdev);
