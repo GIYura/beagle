@@ -23,12 +23,17 @@ ls -l /sys/class/pcd_class - link to pcd should be added
 gcc test.c -o test
 ```
 
-5. Run
+5. Write data to the device file
 ```
-./test
+echo "TEST STRING" > /path-to-device-file
 ```
 
-6. Unload the driver
+6. Run
+```
+./test [device][read-count]
+```
+
+7. Unload the driver
 ```
 sudo rmmod driver.ko
 ```
@@ -36,5 +41,13 @@ sudo rmmod driver.ko
 **NOTE:** change device file access permission:
 ```
 sudo chown [user:group] /path-to-file
+```
+
+**NOTE:** device permissions:
+```
+/dev/pcdev-1 - RO
+/dev/pcdev-2 - WO
+/dev/pcdev-3 - RW
+/dev/pcdev-4 - RW
 ```
 
