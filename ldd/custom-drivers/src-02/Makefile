@@ -7,7 +7,6 @@ CROSS_COMPILE=arm-linux-gnueabihf-
 KERN_DIR=/lib/modules/5.4.106+/source
 HOST_IP=192.168.7.2
 DRV_PATH=/home/jura/driver/02
-USER=jura
 
 # make goes to the path /lib/modules/... triggers top level makefile, 
 # which gets the value of M and M points to the current directory.
