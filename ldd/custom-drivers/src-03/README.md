@@ -51,5 +51,9 @@ sudo chown [user:group] /path-to-file
 /dev/pcdev-4 - RW
 ```
 
-![driver](https://github.com/GIYura/beagle/tree/main/ldd/custom-drivers/src-03/driver-mult-devs.png)
+Relation between device and driver
+![driver-1](https://github.com/GIYura/beagle/tree/main/ldd/custom-drivers/src-03/driver-mult-devs.png)
+
+Access to device from application
+![driver-2](https://github.com/GIYura/beagle/tree/main/ldd/custom-drivers/src-03/drv.png)
 
