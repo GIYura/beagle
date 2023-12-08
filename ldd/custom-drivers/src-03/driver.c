@@ -56,32 +56,35 @@ static struct pcdrv_data m_pcdrv_data =
                             .buffer = m_device_buffer_1,
                             .size = MEM_SIZE_MAX_PCDEV_1,
                             .serialNumber = "PCDEV-01",
-                            .perm = RDONLY, /* read-only */
+                            .perm = RDONLY,
                           },
 
                         [1] = {
                             .buffer = m_device_buffer_2,
                             .size = MEM_SIZE_MAX_PCDEV_2,
                             .serialNumber = "PCDEV-02",
-                            .perm = WRONLY, /* write-only */
+                            .perm = WRONLY,
                           },
 
                         [2] = {
                             .buffer = m_device_buffer_3,
                             .size = MEM_SIZE_MAX_PCDEV_3,
                             .serialNumber = "PCDEV-03",
-                            .perm = RDWR, /* read-write */
+                            .perm = RDWR,
                           },
 
                         [3] = {
                             .buffer = m_device_buffer_4,
                             .size = MEM_SIZE_MAX_PCDEV_4,
                             .serialNumber = "PCDEV-04",
-                            .perm = RDWR, /* read-write */
+                            .perm = RDWR,
                           },
                   }
 };
 
+/*
+macro F_MODE_READ and FMODE_WRITE defined in /linux/fs.h
+*/
 static int check_permission(int dev_perm, int acc_mode)
 {
     if (dev_perm == RDWR)
@@ -106,7 +109,7 @@ static int pcd_open(struct inode *inode, struct file *filp)
 
     /* find out on which device file open was attempted by the user */
     minor = MINOR(inode->i_rdev);
-    pr_info("minor access = %d\n", minor);
+    pr_info("Minor access = %d\n", minor);
 
     /* get device's private data structure */
     pcdev_data = container_of(inode->i_cdev, struct pcdev_private_data, cdev);
