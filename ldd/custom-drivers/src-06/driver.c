@@ -382,6 +382,9 @@ int pcd_platform_driver_probe(struct platform_device *pdev)
     return 0;
 }
 
+/*
+Стуктура описана в /include/linux/mod_devicetable.h
+*/
 struct platform_device_id pcdevs_ids[] = 
 {
     [0] = {.name = "pcdev-A1x", .driver_data = PCDEVA1X},
@@ -391,6 +394,10 @@ struct platform_device_id pcdevs_ids[] =
     { } /*Null termination */
 };
 
+/*
+Стуктура описана в /include/linux/mod_devicetable.h
+Структура используется для сопоставления устройства.
+*/
 struct of_device_id org_pcdev_dt_match[] = 
 {
     { .compatible = "pcdev-A1x", .data = (void*)PCDEVA1X },
@@ -400,6 +407,9 @@ struct of_device_id org_pcdev_dt_match[] =
     { }
 };
 
+/*
+Стуктура описана в /linux/platform_device.h
+*/
 struct platform_driver pcd_platform_driver = 
 {
     .probe = pcd_platform_driver_probe,
