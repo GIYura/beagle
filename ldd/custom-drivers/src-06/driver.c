@@ -62,15 +62,15 @@ struct pcdrv_private_data pcdrv_data;
 
 int check_permission(int dev_perm, int acc_mode)
 {
-    if(dev_perm == RDWR)
+    if (dev_perm == RDWR)
         return 0;
     
     /* ensures readonly access */
-    if( (dev_perm == RDONLY) && ( (acc_mode & FMODE_READ) && !(acc_mode & FMODE_WRITE) ) )
+    if ( (dev_perm == RDONLY) && ( (acc_mode & FMODE_READ) && !(acc_mode & FMODE_WRITE) ) )
         return 0;
     
     /* ensures writeonly access */
-    if( (dev_perm == WRONLY) && ( (acc_mode & FMODE_WRITE) && !(acc_mode & FMODE_READ) ) )
+    if ( (dev_perm == WRONLY) && ( (acc_mode & FMODE_WRITE) && !(acc_mode & FMODE_READ) ) )
         return 0;
 
     return -EPERM;
@@ -90,19 +90,19 @@ loff_t pcd_lseek(struct file *filp, loff_t offset, int whence)
     switch (whence)
     {
         case SEEK_SET:
-            if((offset > max_size) || (offset < 0))
+            if ((offset > max_size) || (offset < 0))
                 return -EINVAL;
             filp->f_pos = offset;
             break;
         case SEEK_CUR:
             temp = filp->f_pos + offset;
-            if((temp > max_size) || (temp < 0))
+            if ((temp > max_size) || (temp < 0))
                 return -EINVAL;
             filp->f_pos = temp;
             break;
         case SEEK_END:
             temp = max_size + offset;
-            if((temp > max_size) || (temp < 0))
+            if ((temp > max_size) || (temp < 0))
                 return -EINVAL;
             filp->f_pos = temp;
             break;
@@ -178,12 +178,12 @@ ssize_t pcd_write(struct file *filp, const char __user *buff, size_t count, loff
 int pcd_open(struct inode *inode, struct file *filp)
 {
     int ret;
-    int minor_n;
+    int minor;
     struct pcdev_private_data *pcdev_data;
 
     /* find out on which device file open was attempted by the user space */
-    minor_n = MINOR(inode->i_rdev);
-    pr_info("minor access = %d\n", minor_n);
+    minor = MINOR(inode->i_rdev);
+    pr_info("Minor access = %d\n", minor);
 
     /* get device's private data structure */
     pcdev_data = container_of(inode->i_cdev, struct pcdev_private_data, cdev);
@@ -272,7 +272,13 @@ struct pcdev_platform_data* pcdev_get_platdata_from_dt(struct device* dev)
 
 struct of_device_id org_pcdev_dt_match[];
 
-/* Called when matched platform device is found */
+/* Called when matched platform device is found.
+Каждый раз при добавлении нового устройства или драйвера, вызывается функция соответствия (mathing)
+и если она находит соответсвие устройства и драйвера, вызывается функция probe.
+Внутри функции probe драйвер конфигурирует обнаруженное устройство.
+Детали обнаруженного устроойства передаются в probe как парамерт. Т.о драйвер может 
+извлечь платформенные данные и настроить их.
+*/
 int pcd_platform_driver_probe(struct platform_device *pdev)
 {
     int ret;
