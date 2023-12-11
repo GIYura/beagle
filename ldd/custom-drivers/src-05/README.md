@@ -3,7 +3,6 @@
 1. Copy driver & setup to the target
 ```
 make copy_drv
-make copy_setup
 ```
 
 2. Load the driver and its setup
