@@ -60,15 +60,15 @@ struct pcdrv_private_data pcdrv_data;
 
 int check_permission(int dev_perm, int acc_mode)
 {
-    if(dev_perm == RDWR)
+    if (dev_perm == RDWR)
         return 0;
     
     /* ensures readonly access */
-    if( (dev_perm == RDONLY) && ( (acc_mode & FMODE_READ) && !(acc_mode & FMODE_WRITE) ) )
+    if ( (dev_perm == RDONLY) && ( (acc_mode & FMODE_READ) && !(acc_mode & FMODE_WRITE) ) )
         return 0;
     
     /* ensures writeonly access */
-    if( (dev_perm == WRONLY) && ( (acc_mode & FMODE_WRITE) && !(acc_mode & FMODE_READ) ) )
+    if ( (dev_perm == WRONLY) && ( (acc_mode & FMODE_WRITE) && !(acc_mode & FMODE_READ) ) )
         return 0;
 
     return -EPERM;
@@ -176,12 +176,12 @@ ssize_t pcd_write(struct file *filp, const char __user *buff, size_t count, loff
 int pcd_open(struct inode *inode, struct file *filp)
 {
     int ret;
-    int minor_n;
+    int minor;
     struct pcdev_private_data *pcdev_data;
 
     /* find out on which device file open was attempted by the user space */
-    minor_n = MINOR(inode->i_rdev);
-    pr_info("minor access = %d\n", minor_n);
+    minor = MINOR(inode->i_rdev);
+    pr_info("Minor access = %d\n", minor);
 
     /* get device's private data structure */
     pcdev_data = container_of(inode->i_cdev, struct pcdev_private_data, cdev);

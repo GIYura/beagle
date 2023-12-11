@@ -5,6 +5,7 @@
 #undef pr_fmt
 #define pr_fmt(fmt) "%s : " fmt,__func__
 
+/* create 4 platform data */
 struct pcdev_platform_data pcdev_pdata[] = 
 {
     [0] = {.size = 512, .perm = RDWR, .serialNumber = "111" },
@@ -18,7 +19,10 @@ void pcdev_release(struct device* dev)
     pr_info("Device released\n");
 }
 
-/* create 2 platform devices */
+/* create 4 platform devices 
+Структура struct platform_device описана в /linux/platform_device.h
+Структура struct device описана в /linux/device.h
+*/
 struct platform_device platform_pcdev_1 = 
 {
     .name = "pcdev-A1x",

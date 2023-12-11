@@ -22,6 +22,3 @@ help:
 copy_drv:
 	scp *.ko $(USER)@$(HOST_IP):$(DRV_PATH)
 
-copy_setup:
-	scp test.c $(USER)@$(HOST_IP):$(DRV_PATH)
-
