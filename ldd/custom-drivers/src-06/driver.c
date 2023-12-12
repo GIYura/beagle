@@ -242,32 +242,34 @@ struct pcdev_platform_data* pcdev_get_platdata_from_dt(struct device* dev)
     struct device_node* dev_node = dev->of_node;
     struct pcdev_platform_data* pdata;
 
+    dev_info(dev, "Inside get platform data from DT\n");
+    
     if (!dev_node)
     /* this probe didn't happen because of device tree node */
         return NULL;
 
     pdata = devm_kzalloc(dev, sizeof(*pdata), GFP_KERNEL);
-    if (pdata == NULL)
+    if (!pdata)
     {
-        pr_info("Can't allocate memory\n");    
+        dev_info(dev, "Can't allocate memory\n");    
         return ERR_PTR(-ENOMEM);
     }
 
     if (of_property_read_string(dev_node, "org,device-serial-number", &pdata->serialNumber))
     {
-        pr_info("Missing serial number property\n");
+        dev_info(dev, "Missing serial number property\n");
         return ERR_PTR(-EINVAL);
     }
     
     if (of_property_read_u32(dev_node, "org,size", &pdata->size))
     {
-        pr_info("Missing size property\n");
+        dev_info(dev, "Missing size property\n");
         return ERR_PTR(-EINVAL);
     }
 
-    if (of_property_read_u32(dev_node, "org,perm", &pdata->size))
+    if (of_property_read_u32(dev_node, "org,perm", &pdata->perm))
     {
-        pr_info("Missing permission property\n");
+        dev_info(dev, "Missing permission property\n");
         return ERR_PTR(-EINVAL);
     }
     return pdata;
@@ -342,8 +344,8 @@ int pcd_platform_driver_probe(struct platform_device *pdev)
     pr_info("Device size = %d\n", dev_data->pdata.size);
     pr_info("Device permission = %d\n", dev_data->pdata.perm);
 
-    pr_info("Config item 1 = %d\n", pcdev_config[pdev->id_entry->driver_data].config_item1);
-    pr_info("Config item 2 = %d\n", pcdev_config[pdev->id_entry->driver_data].config_item2);
+    pr_info("Config item 1 = %d\n",pcdev_config[driver_data].config_item1 );
+    pr_info("Config item 2 = %d\n",pcdev_config[driver_data].config_item2 );
 
     /* Dynamically allocate memory for the device buffer using size 
     information from the platform data */
