@@ -1,0 +1,6 @@
+*
+!*.dts
+!makefile
+!*.md
+!.gitignore
+
