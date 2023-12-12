@@ -27,15 +27,13 @@ touch am335x-boneblack-ldd.dtsi
 #include "am335x-boneblack-ldd.dtsi"
 ```
 
-
-
-4. Run
+6. Run
 ```
 echo "Test string" > /dev/pcdev-0
 cat /dev/pcdev-0
 ```
 
-5. Unload the driver and setup
+7. Unload the driver and setup
 ```
 sudo rmmod driver.ko
 sudo rmmod driver-setup.ko
