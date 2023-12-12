@@ -234,6 +234,9 @@ int pcd_platform_driver_remove(struct platform_device *pdev)
     return 0;
 }
 
+/*
+Ф-ии of_property_read...() описаны /linux/of.h
+*/
 struct pcdev_platform_data* pcdev_get_platdata_from_dt(struct device* dev)
 {
     struct device_node* dev_node = dev->of_node;
