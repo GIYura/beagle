@@ -8,6 +8,6 @@ src-04 - пример использования макроса container_of;
 src-05 - пример символьного драйвера в качестве platform driver; 
 src-06 - пример символьного драйвера с использованием device tree; 
 src-07 - пример использования device tree overlays;
-src-08 - 
+src-08 - пример модели драйвера устройств (sysfs and device attr); 
 ```
 
