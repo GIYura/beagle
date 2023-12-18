@@ -18,15 +18,15 @@
 #define LCD_CMD_DIS_RETURN_HOME     0x02
 
 /* Sets CGRAM address. CGRAM data is sent and received after this setting. */
-#define LCD_CMD_SET_CGRAM_ADDRESS           0x40
+#define LCD_CMD_SET_CGRAM_ADDRESS   0x40
 
 /* Sets DDRAM address. DDRAM data is sent and received after this setting. */
-#define LCD_CMD_SET_DDRAM_ADDRESS           0x80
+#define LCD_CMD_SET_DDRAM_ADDRESS   0x80
 
-#define DDRAM_SECOND_LINE_BASE_ADDR             (LCD_CMD_SET_DDRAM_ADDRESS | 0x40 )
-#define DDRAM_FIRST_LINE_BASE_ADDR              LCD_CMD_SET_DDRAM_ADDRESS
+#define DDRAM_SECOND_LINE_BASE_ADDR (LCD_CMD_SET_DDRAM_ADDRESS | 0x40)
+#define DDRAM_FIRST_LINE_BASE_ADDR  LCD_CMD_SET_DDRAM_ADDRESS
 
-#define LCD_ENABLE 1
+#define LCD_ENABLE  1
 #define LCD_DISABLE 0
 
 void lcd_deinit(void);
