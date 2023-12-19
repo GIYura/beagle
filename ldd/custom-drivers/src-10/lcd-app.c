@@ -49,12 +49,12 @@ void print_time_and_date(void)
     time_t rawtime;
     struct tm* timeinfo;
 
-    time ( &rawtime );
-    timeinfo = localtime ( &rawtime );
+    time (&rawtime);
+    timeinfo = localtime(&rawtime);
 
     lcd_send_command(DDRAM_FIRST_LINE_BASE_ADDR);
 
-    lcd_printf("%d-%d-%d", 1900 + timeinfo->tm_year, timeinfo->tm_mon, timeinfo->tm_mday);
+    lcd_printf("%d-%d-%d", 1900 + timeinfo->tm_year, timeinfo->tm_mon + 1, timeinfo->tm_mday);
 
     lcd_send_command(DDRAM_SECOND_LINE_BASE_ADDR);
 
@@ -109,8 +109,8 @@ void transition_graphics(void)
             usleep(75 * 1000);
 
         }
-            lcd_set_cursor(2, 16);
-            lcd_send_command(0x04);
+        lcd_set_cursor(2, 16);
+        lcd_send_command(0x04);
     }
 
     lcd_set_cursor(1, 1);
@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
         lcd_display_return_home();  
         
         transition_graphics();
-        print_ip_address();     /*Print IP address of BBB */
+        print_ip_address();     /* Print IP address of BBB */
         sleep(1);
         transition_graphics();
         print_time_and_date();  /* Print data and time info */
