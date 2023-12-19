@@ -16,12 +16,16 @@ all:
 
 clean:
 	make ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) -C $(KERN_DIR) M=$(PWD) clean
+	rm -rf *.elf
 
 help:
 	make ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) -C $(KERN_DIR) M=$(PWD) help
 
 copy-drv:
-	scp *.ko *.elf $(USER)@$(HOST_IP):$(DRV_PATH)
+	scp *.ko $(USER)@$(HOST_IP):$(DRV_PATH)
+
+copy-app:
+	scp *.elf $(USER)@$(HOST_IP):$(DRV_PATH)
 
 copy-dtb:
 	scp $(DTB_PATH)/am335x-boneblack.dtb $(USER)@$(HOST_IP):~/driver
