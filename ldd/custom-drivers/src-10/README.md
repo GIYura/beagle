@@ -17,3 +17,6 @@
 
 ![app-struct](https://github.com/GIYura/beagle/blob/main/ldd/custom-drivers/src-10/lcd-app-drv.png)
 
+**NOTE:**
+Refer to /src-06/README.md to run the code.
+
