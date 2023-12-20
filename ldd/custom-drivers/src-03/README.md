@@ -1,39 +1,48 @@
 ### DRIVER TEST
 
-1. Copy driver & test to the target
+#### HOST
+
+1. Compile driver code
 ```
-make copy_drv
-make copy_tst
+make
 ```
 
-2. Load the driver
+2. Copy driver & test to the target
+```
+make copy-drv
+make copy-tst
+```
+
+#### TARGET
+
+3. Load the driver
 ```
 sudo insmod driver.ko
 ```
 
-3. Make sure driver loaded successfully
+4. Make sure driver loaded successfully
 ```
 dmesg | tail -2
 ls -l /dev/pcd - device file should be added
 ls -l /sys/class/pcd_class - link to pcd should be added
 ```
 
-4. Compile 'test'
+5. Compile 'test'
 ```
 gcc test.c -o test
 ```
 
-5. Write data to the device file
+6. Write data to the device file
 ```
 echo "TEST STRING" > /path-to-device-file
 ```
 
-6. Run
+7. Run
 ```
 ./test [device][read-count]
 ```
 
-7. Unload the driver
+8. Unload the driver
 ```
 sudo rmmod driver.ko
 ```
@@ -52,8 +61,8 @@ sudo chown [user:group] /path-to-file
 ```
 
 Relation between device and driver
-![driver-1](https://github.com/GIYura/beagle/tree/main/ldd/custom-drivers/src-03/driver-mult-devs.png)
+![driver-1](https://github.com/GIYura/beagle/blob/main/ldd/custom-drivers/src-03/driver-mult-devs.png)
 
 Access to device from application
-![driver-2](https://github.com/GIYura/beagle/tree/main/ldd/custom-drivers/src-03/drv.png)
+![driver-2](https://github.com/GIYura/beagle/blob/main/ldd/custom-drivers/src-03/drv.png)
 
