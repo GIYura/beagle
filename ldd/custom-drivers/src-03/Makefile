@@ -19,9 +19,9 @@ clean:
 help:
 	make ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) -C $(KERN_DIR) M=$(PWD) help
 
-copy_drv:
+copy-drv:
 	scp *.ko $(USER)@$(HOST_IP):$(DRV_PATH)
 
-copy_tst:
+copy-tst:
 	scp test.c $(USER)@$(HOST_IP):$(DRV_PATH)
 
