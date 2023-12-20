@@ -6,6 +6,7 @@
 #include <linux/device.h>
 #include <linux/kdev_t.h>
 #include <linux/uaccess.h>
+#include <linux/mutex.h>
 
 #undef pr_fmt
 #define pr_fmt(fmt) "%s : " fmt,__func__
@@ -35,7 +36,11 @@ struct pcdev_private_data
     unsigned int size;
     const char* serialNumber;
     int perm;
-    struct cdev cdev; 
+    struct cdev cdev;
+#if 0
+    struct spinlock_t pcdev_spin_lock;  /* not suitable */
+#endif
+    struct mutex pcdev_lock;
 };
 
 /* driver private data */
@@ -136,6 +141,8 @@ static ssize_t pcd_read(struct file *filp, char __user *buff, size_t count, loff
     struct pcdev_private_data *pcdev_data = (struct pcdev_private_data*)filp->private_data;
     int max_size = pcdev_data->size;
 
+    mutex_lock(&pcdev_data->pcdev_lock);
+
     pr_info("Read requested for %zu bytes \n", count);
     pr_info("Current file position = %lld\n", *f_pos);
     
@@ -145,13 +152,17 @@ static ssize_t pcd_read(struct file *filp, char __user *buff, size_t count, loff
 
     /* copy to user */
     if (copy_to_user(buff, pcdev_data->buffer + (*f_pos), count))
+    {
+        mutex_unlock(&pcdev_data->pcdev_lock);
         return -EFAULT;
-
+    }
     /* update current file position */
     *f_pos += count;
 
     pr_info("Number of bytes successfully read = %zu\n", count);
     pr_info("Updated file position = %lld\n", *f_pos);
+
+    mutex_unlock(&pcdev_data->pcdev_lock);
 
     /* return number of bytes successfully read */
     return count;
@@ -161,6 +172,8 @@ static ssize_t pcd_write(struct file *filp, const char __user *buff, size_t coun
 {
     struct pcdev_private_data *pcdev_data = (struct pcdev_private_data*)filp->private_data;
     int max_size = pcdev_data->size;
+
+    mutex_lock(&pcdev_data->pcdev_lock);
 
     pr_info("Write requested for %zu bytes\n", count);
     pr_info("Current file position = %lld\n", *f_pos);
@@ -172,18 +185,24 @@ static ssize_t pcd_write(struct file *filp, const char __user *buff, size_t coun
     if (!count)
     {
         pr_err("No space left on the device \n");
+        mutex_unlock(&pcdev_data->pcdev_lock);
         return -ENOMEM;
     }
 
     /* copy from user */
     if (copy_from_user(pcdev_data->buffer + (*f_pos), buff, count))
+    {
+        mutex_unlock(&pcdev_data->pcdev_lock);
         return -EFAULT;
+    }
 
     /* update the current file postion */
     *f_pos += count;
 
     pr_info("Number of bytes successfully written = %zu\n", count);
     pr_info("Updated file position = %lld\n",*f_pos);
+
+    mutex_unlock(&pcdev_data->pcdev_lock);
 
     /* return number of bytes successfully written */
     return count;
@@ -266,6 +285,11 @@ static int __init moduleInit(void)
     for (i = 0; i < DEV_NUM_MAX; i++)
     {
         pr_info("Device number <major>:<minor> = %d:%d\n", MAJOR(m_pcdrv_data.device_number + i), MINOR(m_pcdrv_data.device_number + i));
+
+#if 0
+        spin_lock_init(&pcdrv_data.pcdev_data[i].pcdev_spin_lock);
+#endif
+        mutex_init(&m_pcdrv_data.pcdev_data[i].pcdev_lock);
 
         /* Initialize the cdev struct with file operations */
         cdev_init(&m_pcdrv_data.pcdev_data[i].cdev, &m_fops);
