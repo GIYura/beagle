@@ -23,12 +23,16 @@ struct file_operations pcd_fops=
     .owner = THIS_MODULE
 };
 
+/*
+NOTE: functions below need lock/unlock, b/c two processes might access to the same data.
+*/
 ssize_t show_max_size(struct device *dev, struct device_attribute *attr, char *buf)
 {
     /* get access to the device private data */
     struct pcdev_private_data *dev_data = dev_get_drvdata(dev->parent);
-
+    /* lock */
     return sprintf(buf, "%d\n", dev_data->pdata.size);
+    /* unlock */
 }
 
 ssize_t show_serial_num(struct device *dev, struct device_attribute *attr, char *buf)
@@ -36,7 +40,9 @@ ssize_t show_serial_num(struct device *dev, struct device_attribute *attr, char 
     /* get access to the device private data */
     struct pcdev_private_data *dev_data = dev_get_drvdata(dev->parent);
 
+    /* lock */
     return sprintf(buf, "%s\n", dev_data->pdata.serialNumber);
+    /* unlock */
 }
 
 ssize_t store_max_size(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
@@ -49,8 +55,10 @@ ssize_t store_max_size(struct device *dev, struct device_attribute *attr, const 
     if (ret)
         return ret;
 
+    /* lock */
     dev_data->pdata.size = result;
-
+    /* unlock */
+    
     dev_data->buffer = krealloc(dev_data->buffer, dev_data->pdata.size, GFP_KERNEL);
 
     return count;

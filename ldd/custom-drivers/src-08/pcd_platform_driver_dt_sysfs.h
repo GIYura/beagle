@@ -47,6 +47,7 @@ struct pcdev_private_data
     char *buffer;
     dev_t dev_num;
     struct cdev cdev;
+    /* ADD: mutex */
 };
 
 /* Driver private data structure */
