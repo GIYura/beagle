@@ -1,29 +1,38 @@
 ### DRIVER TEST
 
-1. Copy driver & setup to the target
+#### HOST
+
+1. Compile driver code & setup
 ```
-make copy_drv
+make
 ```
 
-2. Load the driver and its setup
+2. Copy driver & setup to the target
+```
+make copy-drv
+```
+
+#### TARGET
+
+3. Load the driver & setup
 ```
 sudo insmod driver.ko
 sudo insmod driver-setup.ko
 ```
 
-3. Make sure driver and setup loaded successfully
+4. Make sure driver and setup loaded successfully
 ```
 dmesg | tail -2
 ls -l /dev/pcd - device file should be added
 ls -l /sys/class/pcd_class - link to pcd should be added
 ```
-4. Run
+5. Run
 ```
 echo "Test string" > /dev/pcdev-0
 cat /dev/pcdev-0
 ```
 
-5. Unload the driver and setup
+6. Unload the driver and setup
 ```
 sudo rmmod driver.ko
 sudo rmmod driver-setup.ko
