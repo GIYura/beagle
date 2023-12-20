@@ -1,6 +1,6 @@
 # This is local makefile for kbuild system
 # -m - compile dynamicaly loadable kernel module
-obj-m := driver.o
+obj-m := driver.o driver-lock.o
 ARCH=arm
 CROSS_COMPILE=arm-linux-gnueabihf-
 #KERN_DIR=/lib/modules/4.14.108+/source
