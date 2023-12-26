@@ -1,0 +1,8 @@
+#!/bin/bash
+
+umount /tmp
+mount /dev/mmcblk0p1 /tmp
+cp am335x-boneblack.dtb /tmp
+sync
+umount /tmp
+
