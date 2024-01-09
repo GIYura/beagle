@@ -27,6 +27,17 @@ uboot_overlay_addr4=BB-W1-P9.12-00A0.dtbo
 sudo reboot
 ```
 
+**NOTE:**
+
+ds18b20 .dtbo file location:
+```
+ls -l /lib/firmware/BB-W1-P9.12-00A0.dtbo
+```
+ds18b20 .dts file location:
+```
+ls -l /opt/source/bb.org-overlays/src/arm/BB-W1-P9.12-00A0.dts
+```
+
 #### DS18B20 (custom pin usage)
 
 ##### Connection
@@ -66,35 +77,12 @@ should be commented.
 
 ##### TEST
 
-1. Access over /sysfs
-
-CASE 1
+1. Transfer file /scripts/temp to the target
 ```
-cat /sys/class/hwmon/hwmon0/temp1_input
+scp /scripts/temp <target-IP>
 ```
 
-CASE 2
+2. Run
 ```
-cd /sys/bus/w1/devices/
+./temp
 ```
-2. Make sure ds18b20 detected
-```
-ls 
-```
-Output: ds18b20 has ID 28-xxxx
-
-3. Run 
-```
-cat <ds18b20-ID>/temperature
-```
-
-Output: the number is temperature in C times 1000.
-
-**NOTE: (related to deafult setup)**
-
-ds18b20 .dtbo file location:
-/lib/firmware/BB-W1-P9.12-00A0.dtbo
-
-ds18b20 .dts file location:
-/opt/source/bb.org-overlays/src/arm/BB-W1-P9.12-00A0.dts
-
