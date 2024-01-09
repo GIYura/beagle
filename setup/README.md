@@ -31,3 +31,9 @@ sudo usermod -a -G <group-to-add> <user-name>
 ```
 Example: sudo usermod -a -G sudo [user-name]
 
+8. Set timezone
+```
+timedatectl list-timezones
+sudo timedatectl set-timezone <name-of-time-zone>
+```
+
