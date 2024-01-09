@@ -3,15 +3,11 @@
 
 / {
     compatible = "ti,beaglebone", "ti,beaglebone-black";
-    part-number = "BB-W1";
+    part-number = "DS18B20";
     version = "00A0"; 
 
     /* state the resources this cape uses */
-    exclusive-use =
-        /* the pin header uses */
-        "P8.46";
-        /* the hardware IP uses */
-        //"gpio1_28"; 
+    exclusive-use = "P8.46"; 
 
     fragment@0 {
                target = <&am33xx_pinmux>;
@@ -30,9 +26,7 @@
                    pinctrl-names   = "default";
                    pinctrl-0       = <&dallas_w1_pins>;
                    status          = "okay"; 
-
-                   //gpios = <&gpio1 28 0>;
-                   gpios = <&gpio2 7 0>;
+                   gpios           = <&gpio2 7 0>;
                };
          };
     };

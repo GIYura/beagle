@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# NOTE: compile .dts file into .dtbo
+
+FILE_IN=$1
+
+if [ -z $FILE_IN ]; then
+    echo "Specify .dts file"
+    echo "Usage: ./compile-dts file-name"
+exit
+fi
+
+FILE_OUT=${FILE_IN%.*}.dtbo
+
+dtc -O dtb -o $FILE_OUT -b 0 -@ $FILE_IN
+
