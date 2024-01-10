@@ -5,10 +5,6 @@
 # get ds18b20 ID
 ID=$(ls /sys/bus/w1/devices/ | grep 28)
 FILE=/sys/bus/w1/devices/$ID/w1_slave
-MONTH=$(date +"%m")
-DAY=$(date +"%d")
-YEAR=$(date +"%y")
-TIME=$(date +"%T")
 
 function TempSensor_Connect()
 {
@@ -52,7 +48,6 @@ function CheckSum_Read()
 }
 
 #output: the number is temperature in C times 1000.
-awk "BEGIN {printf \"TEMP: %.3f C\n\", $(TempSensor_Read)/1000}"
-echo "DATE: $YEAR-$MONTH-$DAY"
-echo "TIME: $TIME"
+awk "BEGIN { printf \"Temp: %.3f C \", $(TempSensor_Read)/1000 }"
+awk 'BEGIN { print strftime("%m/%d/%Y %H:%M:%S", systime()) }'
 
