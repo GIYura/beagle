@@ -3,11 +3,10 @@
 obj-m := gpio-sysfs.o 
 ARCH=arm
 CROSS_COMPILE=arm-linux-gnueabihf-
-#KERN_DIR=/lib/modules/4.14.108+/source
-KERN_DIR=/lib/modules/5.4.106+/source
+KERN_DIR=/lib/modules/5.10.168/source
 HOST_IP=192.168.7.2
 DRV_PATH=~/driver/12
-DTB_PATH=~/programming/beagle/ldd/source/linux-bbb-5.4/linux/arch/arm/boot/dts
+DTB_PATH=~/programming/beagle/ldd/source/linux-bbb-5.10.168-ti-r72/linux/arch/arm/boot/dts
 
 # make goes to the path /lib/modules/... triggers top level makefile, 
 # which gets the value of M and M points to the current directory.
