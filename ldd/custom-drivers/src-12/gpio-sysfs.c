@@ -274,6 +274,8 @@ void __exit gpio_sysfs_exit(void)
     platform_driver_unregister(&gpiosysfs_platform_driver);
     
     class_destroy(gpio_drv_data.class_gpio);
+
+    pr_info("Module unload success\n");
 }
 
 module_init(gpio_sysfs_init);
