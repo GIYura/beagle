@@ -1,0 +1,34 @@
+/ {
+    /* gpio client */
+    bone_gpio_devs {
+        compatible="org,bone-gpio-sysfs";
+        pinctrl-single,names="default";
+        pinctrl-0=<&p8_gpios>;
+        
+        led0 {
+            label="userled0:gpio1.21";
+            bone-gpios=<&gpio1 21 GPIO_ACTIVE_HIGH>;
+        };        
+    
+        led1 {
+            label="userled1:gpio1.22";
+            bone-gpios=<&gpio1 22 GPIO_ACTIVE_HIGH>;
+        };
+        led2 {
+            label="userled2:gpio1.23";
+            bone-gpios=<&gpio1 23 GPIO_ACTIVE_HIGH>;
+        };
+        led4 {
+            label="userled3:gpio1.24";
+            bone-gpios=<&gpio1 24 GPIO_ACTIVE_HIGH>;
+        };        
+    }; /* bone_gpio_devs */
+}; /* root */
+
+&am33xx_pinmux {
+    /* child node of pin controller node */
+    p8_gpios:bone_p8_gpios {
+        pinctrl-single,pins=<>;
+    };
+};
+
