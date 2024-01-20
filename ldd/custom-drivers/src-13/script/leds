@@ -2,3 +2,40 @@
 
 # On-board LEDs control
 
+LED_TIMEOUT=0.2
+LED_PATH=/sys/class/bone_gpios/
+
+LED_ON ()
+{
+    PIN=$(($2+1))
+    PATH=$1userled$2:gpio1.2$PIN
+    echo 1 > $PATH/value
+}
+
+LED_OFF ()
+{
+    PIN=$(($2+1))
+    PATH=$1userled$2:gpio1.2$PIN
+    echo 0 > $PATH/value
+}
+
+ALL_LEDS_OFF()
+{
+    for (( i=0; i<=3; i++ ))
+    do
+        LED_OFF $LED_PATH $i & sleep 0.001
+    done
+}
+
+while true
+do
+    for (( i=0; i<=3; i++ ))
+    do
+        LED_ON $LED_PATH $i & sleep $LED_TIMEOUT
+    done
+    for (( i=3; i>=0; i-- ))
+    do
+        LED_OFF $LED_PATH $i & sleep $LED_TIMEOUT
+    done
+done
+
