@@ -28,7 +28,9 @@
 &am33xx_pinmux {
     /* child node of pin controller node */
     p8_gpios:bone_p8_gpios {
-        pinctrl-single,pins=<>;
+        pinctrl-single,pins=<
+                                AM33XX_PADCONF(AM335X_PIN_LCD_DATA1, PIN_OUTPUT, MUX_MODE7) 
+        >;
     };
 };
 
