@@ -2,8 +2,20 @@
 
 # On-board LEDs control
 
-LED_TIMEOUT=0.2
-LED_PATH=/sys/class/bone_gpios
+LED_NUMBER=4
+LED_TIMEOUT=$1
+LED_PATH=/sys/class/bone_gpios/userled
+
+if [ $# -eq 0 ]; then
+    echo "Invalid number of arguments"
+    echo "Usage: sudo ./leds <timeout within range 0.1 - 1 sec>"
+    exit
+fi
+
+if [[ $(bc <<< "$LED_TIMEOUT < 0.1") == 1 || $(bc <<< "$LED_TIMEOUT > 1") == 1 ]]; then
+    echo "Timeout invalid. Should be within range 0.1 - 1 sec"
+    exit
+fi
 
 LED_ON ()
 {
@@ -17,15 +29,20 @@ LED_OFF ()
 
 LED_INIT ()
 {
-    for (( i=0; i<=3; i++ ))
-    do 
-        LED=$LED_PATH/userled$i:gpio1.2$(($i+1))
+    for (( i=0; i<=$(($LED_NUMBER-1)); i++ ))
+    do
+        LED=$LED_PATH$i:gpio1.2$(($i+1))
         if ! [ -e $LED ]; then
-            echo "File $LED not found"
+            echo "File $LED not found. Check driver load"
             exit
         fi
         LED_OFF $LED
     done
+}
+
+PAUSE ()
+{
+    sleep $1
 }
 
 LED_INIT
@@ -33,17 +50,17 @@ sleep 0.5
 
 while true
 do
-    for (( i=0; i<=3; i++ ))
+    for (( i=0; i<=$(($LED_NUMBER-1)); i++ ))
     do
-        LED=$LED_PATH/userled$i:gpio1.2$((i+1))
+        LED=$LED_PATH$i:gpio1.2$((i+1))
         LED_ON $LED
-        sleep $LED_TIMEOUT
+        PAUSE $LED_TIMEOUT
     done
-    for (( i=3; i>=0; i-- ))
+    for (( i=$(($LED_NUMBER-1)); i>=0; i-- ))
     do
-        LED=$LED_PATH/userled$i:gpio1.2$((i+1))
+        LED=$LED_PATH$i:gpio1.2$((i+1))
         LED_OFF $LED
-        sleep $LED_TIMEOUT
+        PAUSE $LED_TIMEOUT
     done
 done
 
