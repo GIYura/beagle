@@ -11,7 +11,7 @@
 | USR2        | GPIO1_23     |
 | USR3        | GPIO1_24     |
 
-##### Settings (HOST)
+##### Host settings
 
 1. Modify (create) .dtsi file, located in /dts directory of the current project;
 
@@ -20,27 +20,27 @@
 cp <file.dtsi> /linux/arch/arm/boot/dts
 ```
 
-3. Edit main .dts file, run:
+3. Edit main .dts file:
 ```
 vim am335x-boneblack.dts
 ```
 
-4. Include desired .dtsi file;
+4. Include desired .dtsi file into main .dts;
 
 5. Edit am335x-bone-common.dtsi. Comment leds section.
-NOTE: this section might be used by come other driver.
+NOTE: this section might be used by some other driver.
 
-6. Compile main .dts into .dtb
+6. Compile main .dts into .dtb:
 ```
 make ARHC=arm CROSS_COMPILE=arm-linux-gnueabihf- am335x-boneblack.dtb
 ```
 
-7. Trasfer .dtb into target
+7. Trasfer am335x-boneblack.dtb into target:
 ```
-scp .dtb <USER>@<TARGET_IP>:/location
+scp am335x-boneblack.dtb <USER>@<TARGET_IP>:/location
 ```
 
-##### Settings (TARGET)
+##### Target settings
 
 1. Edit file /boot/uEnv.txt
 ```
@@ -52,9 +52,9 @@ sudo vim /boot/uEnv.txt
 #uboot_overlay_overlays=1
 ```
 
-3. Copy .dtb into boot:
-````
-sudo cp .dtb /boot/dtbs/<core-version>
+3. Copy .dtb into boot section:
+```
+sudo cp am335x-boneblack.dtb /boot/dtbs/<core-version>
 ```
 
 4. Run
@@ -64,7 +64,7 @@ sudo reboot
 
 ##### TEST
 
-1. Compile driver
+1. Compile driver:
 ```
 make 
 ```
@@ -76,16 +76,16 @@ make copy-drv
 
 3. Load the driver:
 ```
-sudo insmod .ko
+sudo insmod <file-name.ko>
 ```
 
-4. Transfer file /scripts/led to the target
+4. Transfer script to the target:
 ```
-scp /scripts/temp <USER>@<TARGET-IP>:/location
+scp /scripts/leds <USER>@<TARGET-IP>:/location
 ```
 
 5. Run
 ```
-./led
+sudo ./leds
 ```
 
