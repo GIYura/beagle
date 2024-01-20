@@ -54,7 +54,7 @@ sudo vim /boot/uEnv.txt
 
 3. Copy .dtb into boot:
 ````
-sudo cp .dtb /boot/dts/<core-version>
+sudo cp .dtb /boot/dtbs/<core-version>
 ```
 
 4. Run
