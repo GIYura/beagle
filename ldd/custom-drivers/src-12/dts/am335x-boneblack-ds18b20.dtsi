@@ -2,17 +2,11 @@
     /* gpio client */
     bone_gpio_devs {
         compatible="org,bone-gpio-sysfs";
-        pinctrl-single,names="default";
-        pinctrl-0=<&p8_gpios>;
+
+        ds18b20-io {
+            label="gpio2.7";
+            bone-gpios=<&gpio2 7 GPIO_ACTIVE_HIGH>;
+        };
     }; /* bone_gpio_devs */
 }; /* root */
-
-&am33xx_pinmux {
-    /* child node of pin controller node */
-    p8_gpios:bone_p8_gpios {
-        pinctrl-single,pins=<
-                                AM33XX_PADCONF(AM335X_PIN_LCD_DATA1, PIN_OUTPUT, MUX_MODE7)
-        >;
-    };
-};
 
