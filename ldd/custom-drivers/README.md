@@ -12,6 +12,7 @@ src-08 - пример модели драйвера устройств (sysfs an
 src-09 - пример использования подсистемы GPIO; 
 src-10 - пример использования подсистемы контроля вывода (pin control subsystem); 
 src-11 - пример сервисов синхронизации в Linux;
-src-12 - пример драйвера датчик температуры ds18b20;
-src-13 - пример драйвера gpio (onboard LED control);
+src-12 - пример драйвера датчик температуры ds18b20 (based on device tree);
+src-13 - пример драйвера gpio (onboard LED control based on device tree);
+src-14 - пример драйвера датчика температуры ds18b20 (integrated in driver);
 ```
