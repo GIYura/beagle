@@ -6,35 +6,73 @@
 #include <linux/gpio.h>
 #include <linux/delay.h>
 
-/* Meta Information */
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Jura");
-MODULE_DESCRIPTION("ds18b20 driver");
-
 static dev_t deviceNumber;
 static struct class* devClass;
 static struct cdev device;
 
 #define DRIVER_NAME "ds18b20"
-#define DRIVER_CLASS "DS-Class"
+#define DRIVER_CLASS "ds18b20-class"
 
-/* DS18B20 connected to gpio2_7. 
-Calculate gpio pin: gpio2_7 = 2 * 32 + 7 = 71 */
-#define DS18B20_PIN 71
+#define DS18B20_IN gpio_direction_input(gpio_pin)
+#define DS18B20_OUT gpio_direction_output(gpio_pin, 1)
+#define DS18B20_HIGH gpio_set_value(gpio_pin, 1)
+#define DS18B20_LOW gpio_set_value(gpio_pin, 0)
+#define DS18B20_GET_DATA gpio_get_value(gpio_pin)
 
-static const unsigned int GPIO_NUM = DS18B20_PIN;
+static unsigned int gpio_pin = 0;
+static unsigned int cb_gpio_pin = 0;
+
+module_param(gpio_pin, uint, S_IRUSR|S_IWUSR);
+
+int notify_param(const char *val, const struct kernel_param *kp)
+{
+    int ret = 0;
+    int res = 0;
+    int n = 0;
+
+    ret = kstrtoint(val, 10, &n);
+    if (ret != 0)
+    {
+        pr_info("Failed to convert param\n");
+        return -EINVAL;
+    }
+
+    /* pins from GPIO2-6 till GPIO2_13 are valid */
+    if (n < 70 || n > 77)
+    {
+        pr_info("Number of gpio pin invalid\n");
+        return -EINVAL;
+    }
+
+    res = param_set_int(val, kp);
+    if (res != 0)
+    {
+        pr_info("Failed to set new gpio pin number\n");
+        return -EINVAL;
+    }
+
+    pr_info("Call back function called\n");
+    pr_info("New value of gpio pin = %d\n", cb_gpio_pin);
+
+    /* save new gpio pin value */
+    gpio_pin = cb_gpio_pin;
+
+    return 0;
+}
+ 
+const struct kernel_param_ops param_ops = 
+{
+    .set = &notify_param,
+    .get = &param_get_int,
+};
+ 
+module_param_cb(cb_gpio_pin, &param_ops, &cb_gpio_pin, S_IRUGO|S_IWUSR);
 
 typedef struct
 {
     uint8_t low;
     uint8_t high;
 } Temperature_t;
-
-#define DS18B20_IN gpio_direction_input(GPIO_NUM)
-#define DS18B20_OUT gpio_direction_output(GPIO_NUM, 1)
-#define DS18B20_HIGH gpio_set_value(GPIO_NUM, 1)
-#define DS18B20_LOW gpio_set_value(GPIO_NUM, 0)
-#define DS18B20_GET_DATA gpio_get_value(GPIO_NUM)
 
 static uint8_t ds18b20_reset(void)
 {
@@ -212,18 +250,26 @@ static int __init ModuleInit(void)
         pr_info("Registering of device to kernel failed!\n");
         goto AddError;
     }
-    
+   
+    if (gpio_pin == 0)
+    {
+        pr_info("DS18B20 gpio pin number: %d\n", gpio_pin);
+        goto DS18B20_Error;
+    }
+ 
     /* DS18B20 PIN init */
-    if (gpio_request(DS18B20_PIN, "ds-gpio"))
+    if (gpio_request(gpio_pin, "ds-gpio"))
     {
         pr_info("Can not allocate DS18D20 GPIO\n");
         goto DS18B20_Error;
     }
 
+    pr_info("DS18B20 register success\n");
+    pr_info("DS18B20 gpio pin number: %d\n", gpio_pin);
     return 0;
 
 DS18B20_Error:
-    gpio_free(DS18B20_PIN);
+    gpio_free(gpio_pin);
 AddError:
     device_destroy(devClass, deviceNumber);
 FileError:
@@ -238,15 +284,21 @@ ClassError:
  */
 static void __exit ModuleExit(void)
 {
-    gpio_set_value(DS18B20_PIN, 0);
-    gpio_free(DS18B20_PIN);
+    gpio_set_value(gpio_pin, 0);
+    gpio_free(gpio_pin);
 
     cdev_del(&device);
     device_destroy(devClass, deviceNumber);
     class_destroy(devClass);
     unregister_chrdev_region(deviceNumber, 1);
+    pr_info("DS18B20 unregister success\n");
 }
 
 module_init(ModuleInit);
 module_exit(ModuleExit);
+
+/* Meta Information */
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Jura");
+MODULE_DESCRIPTION("DS18B20 driver");
 
