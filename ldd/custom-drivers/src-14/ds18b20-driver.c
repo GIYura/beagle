@@ -149,12 +149,14 @@ static ssize_t driver_read(struct file *File, char *user_buffer, size_t count, l
 static int driver_open(struct inode *device_file, struct file *instance)
 {
     uint8_t reset;
-    printk("driver_open called!\n");
+    pr_info("DS18B20 driver_open called!\n");
     reset = ds18b20_reset();
     if (reset & 0x01)
     {
+        pr_info("ERROR: DS18B20 NOT detected\n");
         return -1;
     }
+    pr_info("DS18B20 detected\n");
     return 0;
 }
 
@@ -163,7 +165,7 @@ static int driver_open(struct inode *device_file, struct file *instance)
  */
 static int driver_close(struct inode *device_file, struct file *instance)
 {
-    printk("driver_close called!\n");
+    pr_info("DS18B20 driver_close called!\n");
     return 0;
 }
 
@@ -179,27 +181,25 @@ static struct file_operations fops =
  * @brief This function is called, when the module is loaded into the kernel
  */
 static int __init ModuleInit(void) 
-{
-    printk("Hello, Kernel!\n");
-    
+{   
     if (alloc_chrdev_region(&deviceNumber, 0, 1, DRIVER_NAME) < 0)
     {
-        printk("Device Number could not be allocated!\n");
+        pr_info("Device Number could not be allocated!\n");
         return -1;
     }
-    printk("read_write - Device number Major: %d, Minor: %d was registered!\n", deviceNumber >> 20, deviceNumber && 0xfffff);
+    pr_info("read_write - Device number Major: %d, Minor: %d was registered!\n", deviceNumber >> 20, deviceNumber && 0xfffff);
 
     /* Create device class */
     if ((devClass = class_create(THIS_MODULE, DRIVER_CLASS)) == NULL)
     {
-        printk("Device class can not be created!\n");
+        pr_info("Device class can not be created!\n");
         goto ClassError;
     }
 
     /* create device file */
     if (device_create(devClass, NULL, deviceNumber, NULL, DRIVER_NAME) == NULL)
     {
-        printk("Can not create device file!\n");
+        pr_info("Can not create device file!\n");
         goto FileError;
     }
 
@@ -209,14 +209,14 @@ static int __init ModuleInit(void)
     /* Regisering device to kernel */
     if (cdev_add(&device, deviceNumber, 1) == -1)
     {
-        printk("Registering of device to kernel failed!\n");
+        pr_info("Registering of device to kernel failed!\n");
         goto AddError;
     }
     
     /* DS18B20 PIN init */
     if (gpio_request(DS18B20_PIN, "ds-gpio"))
     {
-        printk("Can not allocate DS18D20 GPIO\n");
+        pr_info("Can not allocate DS18D20 GPIO\n");
         goto DS18B20_Error;
     }
 
@@ -245,7 +245,6 @@ static void __exit ModuleExit(void)
     device_destroy(devClass, deviceNumber);
     class_destroy(devClass);
     unregister_chrdev_region(deviceNumber, 1);
-    printk("Goodbye, Kernel\n");
 }
 
 module_init(ModuleInit);
