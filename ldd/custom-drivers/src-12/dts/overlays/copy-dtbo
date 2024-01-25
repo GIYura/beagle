@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# NOTE: copy .dtbo file to the target
+# target IP: 192.168.7.2
+
+# usage 
+# ./copy-dtb .dtbo
+
+FILE_IN=$1
+TARGET_IP=192.168.7.2
+
+if [ -z $FILE_IN ]; then
+    echo "Specify .dtbo file"
+    echo "Usage: ./copy-dtbo file-name"
+    exit
+fi
+
+scp $FILE_IN $USER@$TARGET_IP:/home/$USER/driver
+
