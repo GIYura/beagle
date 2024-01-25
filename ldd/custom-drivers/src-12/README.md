@@ -86,3 +86,7 @@ scp /scripts/temp <target-IP>
 ```
 ./temp
 ```
+
+**!!!IMPORTANT!!!:**
+It is not possible to provide timimgs using lib.
+
