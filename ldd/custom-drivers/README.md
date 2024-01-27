@@ -15,4 +15,5 @@ src-11 - пример сервисов синхронизации в Linux;
 src-12 - пример драйвера датчика температуры ds18b20 (based on device tree);
 src-13 - пример драйвера gpio (onboard LED control based on device tree);
 src-14 - пример драйвера датчика температуры ds18b20 (integrated in driver);
+src-15 - пример работы с шиной I2C (accelerometer adxl345);
 ```
