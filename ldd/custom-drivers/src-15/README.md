@@ -36,12 +36,6 @@ enable_uboot_overlays=1
 - enable I2C bus:
 ```
 uboot_overlay_addr6=BB-I2C1-00A0.dtbo
-uboot_overlay_addr7=BB-I2C2-00A0.dtbo
-```
-
-- enable adxl345:
-```
-uboot_overlay_addr4=BB-I2C2-ADXL34X.dtbo
 ```
 
 2. Install I2C tool:
