@@ -8,7 +8,7 @@ CFLAGS = $(STANDARD) -c -g $(OPTIMIZATION) -MD -Wall -pedantic
 LDFLAGS =
 SRC = $(wildcard *.c)
 OBJ = $(addsuffix .o, $(basename $(SRC)))
-TARGET = adxl345-test
+TARGET = adxl345-app
 HOST_IP=192.168.7.2
 APP_PATH=~/driver/15
 
