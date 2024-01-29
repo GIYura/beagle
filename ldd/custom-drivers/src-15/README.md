@@ -6,7 +6,7 @@
 
 | ADXL345  | BBB     | Notes      |
 |----------|---------|------------|
-|  GND     |  P9.1   |            |
+|  GND     |  P9.1   |  GND       |
 |  VCC     |  P9.3   |  3.3V      |
 |  CS      |  P9.3   |  3.3V      |
 |  SCL     |  P9.17  |  I2C1_SCL  |
@@ -48,10 +48,11 @@ sudo apt-get install i2c-tools
 i2sdetect -y -r 1
 ```
 NOTE: last param is bus number [1 - 2].
+
 The output should be 0x53 - adxl345 address.
 
 4. Run application:
 ```
-./adxl345-test
+./adxl345-app
 ```
 
