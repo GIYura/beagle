@@ -7,6 +7,8 @@
 
 #include "adxl345.h"
 
+static Axes_t m_axes;
+
 int main(int argc, char* argv[])
 {
    int fd;
@@ -25,7 +27,15 @@ int main(int argc, char* argv[])
     }
    
     AccelInit(fd);
- 
+
+    while (1)
+    {
+        AccelVector(fd, &m_axes); 
+        AccelVectorPrint(&m_axes);
+
+        sleep (1);
+    }
+
     close(fd);
 
     return 0;
