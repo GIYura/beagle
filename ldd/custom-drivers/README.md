@@ -17,4 +17,5 @@ src-13 - пример драйвера gpio (onboard LED control based on device
 src-14 - пример драйвера датчика температуры ds18b20 (integrated in driver);
 src-15 - пример работы с шиной I2C (accelerometer adxl345);
 src-16 - пример драйвера I2C (accelerometer adxl345);
+src-17 - пример работы с шиной SPI (accelerometer adxl345);
 ```
