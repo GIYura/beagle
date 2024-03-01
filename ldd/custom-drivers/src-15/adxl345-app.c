@@ -11,8 +11,8 @@ static Axes_t m_axes;
 
 int main(int argc, char* argv[])
 {
-   int fd;
-   printf("ADXL345 test application\n");
+    int fd;
+    printf("ADXL345 test application\n");
    
     if ((fd = open("/dev/i2c-1", O_RDWR)) < 0)
     {
