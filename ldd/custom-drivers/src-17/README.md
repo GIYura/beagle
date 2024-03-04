@@ -36,7 +36,7 @@ enable_uboot_overlays=1
 
 - enable SPI0 bus:
 ```
-uboot_overlay_addr6=BB-SPIDEV0-00A0.dtbo
+uboot_overlay_addr6=/lib/firmware/BB-SPIDEV0-00A0.dtbo
 ```
 
 2. Run application:
