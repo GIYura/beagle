@@ -9,20 +9,13 @@
 
 #include "spi.h"
 
-static unsigned char m_send[2];
-static unsigned char m_receive[2];
+#define BUFF_SIZE   2
 
-/*
-struct spi_ioc_transfer = {
-    .tx_buf = (unsigned long)m_send,
-    .rx_buf = (unsigned long)m_receive,
-    .len = 2,
-};
-*/
-
+static unsigned char m_send[BUFF_SIZE];
+static unsigned char m_receive[BUFF_SIZE];
 static struct spi_ioc_transfer m_transfer;
 
-bool SpiInit(int fd, unsigned int mode, unsigned int bits, unsigned int speed)
+bool SpiInit(int fd, uint8_t mode, uint8_t bits, uint32_t speed)
 {
     assert(fd > 0);
     assert(mode >= 0 && mode <= 3);
@@ -31,6 +24,7 @@ bool SpiInit(int fd, unsigned int mode, unsigned int bits, unsigned int speed)
 
     m_transfer.tx_buf = (unsigned long)m_send;
     m_transfer.rx_buf = (unsigned long)m_receive;
+    m_transfer.len = BUFF_SIZE;
 
     if (ioctl(fd, SPI_IOC_WR_MODE, &mode) < 0)
     {
@@ -70,11 +64,11 @@ bool SpiInit(int fd, unsigned int mode, unsigned int bits, unsigned int speed)
     return true;
 }
 
-unsigned int SpiRead(int fd, unsigned char addr, unsigned char* buffer, unsigned char size)
+uint8_t SpiReadByte(int fd, uint8_t addr, uint8_t* const buffer)
 {
-    m_send[0] = addr;
+    m_send[0] = (0x80 | addr);
 
-    if (ioctl(fd, SPI_IOC_MESSAGE(size), &m_transfer) < 0)
+    if (ioctl(fd, SPI_IOC_MESSAGE(1), &m_transfer) < 0)
     {
         perror("SPI: Failed to read message\n");
         return -1;
@@ -82,6 +76,19 @@ unsigned int SpiRead(int fd, unsigned char addr, unsigned char* buffer, unsigned
 
     buffer[0] = m_receive[1];
 
+    return 0;
+}
+
+uint8_t SpiWriteByte(int fd, uint8_t addr, uint8_t value)
+{
+    m_send[0] = (0x00 | addr);
+    m_send[1] = value;
+
+    if (ioctl(fd, SPI_IOC_MESSAGE(1), &m_transfer) < 0)
+    { 
+        perror("SPI: Failed to read message\n");
+        return -1;
+    }
     return 0;
 }
 
