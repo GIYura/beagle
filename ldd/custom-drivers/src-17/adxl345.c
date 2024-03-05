@@ -7,21 +7,23 @@
 #include "adxl345.h"
 #include "spi.h"
 
-#define BUFFER_SIZE     0x40
-#define GRAVITY         9.81 /* m/s^2 */
+#define ADXL345_ID      0xE5
+
+#define GRAVITY         9.81    /* free fall acceleration in m/s^2 */
 
 static uint8_t AccelRegRead(int fd, uint8_t reg, uint8_t* const value);
 static uint8_t AccelRegReadBlock(int fd, uint8_t reg, uint8_t* const buff, uint8_t size);
 static uint8_t AccelRegWrite(int fd, uint8_t reg, uint8_t value);
+static bool AccelRegIsValid(uint8_t reg);
 
 void AccelInit(int fd)
 {
-    uint8_t devId = 0x00;
+    uint8_t devId = 0;
     uint8_t ret = 0;
     
     uint8_t spiMode = 3; 
     uint8_t spiBits = 8;
-    uint32_t spiSpeed = 5000000;
+    uint32_t spiSpeed = 5000000; /* Hz */
     
     if (!SpiInit(fd, spiMode, spiBits, spiSpeed))
     {
@@ -37,6 +39,12 @@ void AccelInit(int fd)
     }
     else
     {
+        if (devId != ADXL345_ID)
+        {
+            printf("ERROR: Invalid DEVID\n");
+            assert(0);
+        }
+    
         printf("DEV ID: 0x%02x\n", devId);
     }
 
@@ -114,7 +122,7 @@ static uint8_t AccelRegRead(int fd, uint8_t reg, uint8_t* const value)
         return 1;
     }
 
-    if ((reg >= 0x01 && reg <= 0x1C) || reg > 0x39)
+    if (!AccelRegIsValid(reg))
     {
         printf("ERROR: Invalid register\n");
         return 2;
@@ -137,7 +145,7 @@ static uint8_t AccelRegReadBlock(int fd, uint8_t reg, uint8_t* const buff, uint8
         return 1;
     }
 
-    if ((reg >= 0x01 && reg <= 0x1C) || reg > 0x39)
+    if (!AccelRegIsValid(reg))
     {
         printf("ERROR: Invalid register\n");
         return 2;
@@ -160,7 +168,7 @@ static uint8_t AccelRegWrite(int fd, uint8_t reg, uint8_t value)
         return 1;
     }
 
-    if ((reg >= 0x01 && reg <= 0x1C) || reg > 0x39)
+    if (!AccelRegIsValid(reg))
     {
         printf("ERROR: Invalid register\n");
         return 2;
@@ -174,4 +182,9 @@ static uint8_t AccelRegWrite(int fd, uint8_t reg, uint8_t value)
 
     return 0;
 }   
+
+static bool AccelRegIsValid(uint8_t reg)
+{
+    return ((reg < 0x01 || reg > 0x1C) && reg < 0x39) ? true : false;
+}
 
