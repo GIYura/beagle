@@ -16,16 +16,16 @@ static uint8_t AccelRegReadBlock(int fd, uint8_t reg, uint8_t* const buff, uint8
 static uint8_t AccelRegWrite(int fd, uint8_t reg, uint8_t value);
 static bool AccelRegIsValid(uint8_t reg);
 
+static const uint8_t MODE = 3;
+static const uint8_t BITS = 8;
+static const uint32_t SPEED = 5000000;   /* Hz */
+
 void AccelInit(int fd)
 {
     uint8_t devId = 0;
     uint8_t ret = 0;
     
-    uint8_t spiMode = 3; 
-    uint8_t spiBits = 8;
-    uint32_t spiSpeed = 5000000; /* Hz */
-    
-    if (!SpiInit(fd, spiMode, spiBits, spiSpeed))
+    if (!SpiInit(fd, MODE, BITS, SPEED))
     {
         printf("ERROR: Failed to init SPI\n");
         assert(0);
