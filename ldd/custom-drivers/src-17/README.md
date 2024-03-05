@@ -41,6 +41,6 @@ uboot_overlay_addr6=/lib/firmware/BB-SPIDEV0-00A0.dtbo
 
 2. Run application:
 ```
-./adxl345-app
+sudo ./adxl345-app
 ```
 
