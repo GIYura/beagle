@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdint.h>    
 #include <stdio.h>
 #include <unistd.h>
@@ -10,7 +11,7 @@
 #define GRAVITY         9.81 /* m/s^2 */
 
 static uint8_t AccelRegRead(int fd, uint8_t reg, uint8_t* const value);
-static uint8_t AccelRegReadBlock(int fd, uint8_t reg, uint8_t* buff, uint8_t size);
+static uint8_t AccelRegReadBlock(int fd, uint8_t reg, uint8_t* const buff, uint8_t size);
 static uint8_t AccelRegWrite(int fd, uint8_t reg, uint8_t value);
 
 void AccelInit(int fd)
@@ -25,14 +26,14 @@ void AccelInit(int fd)
     if (!SpiInit(fd, spiMode, spiBits, spiSpeed))
     {
         printf("ERROR: Failed to init SPI\n");
-        return;
+        assert(0);
     }
 
     ret = AccelRegRead(fd, DEVID, &devId);
     if (ret != 0)
     {
         printf("ERROR: 0x%02x: Failed to read DEVID\n", ret);
-        return;
+        assert(0);
     }
     else
     {
@@ -43,19 +44,33 @@ void AccelInit(int fd)
     - output data rate - 200 Hz;
     - normal operation
     */
-    AccelRegWrite(fd, BW_RATE, 0x0b);
+    ret = AccelRegWrite(fd, BW_RATE, 0x0b);
+    if (ret != 0)
+    {
+        printf("ERROR: 0x%02x: Failed to write\n", ret);
+        assert(0);
+    }
     
     /*
     - range - +- 16g;
     - full resolution;
     - right justified
     */
-    AccelRegWrite(fd, DATA_FORMAT, 0x0b);
-
+    ret = AccelRegWrite(fd, DATA_FORMAT, 0x0b);
+    if (ret != 0)
+    {
+        printf("ERROR: 0x%02x: Failed to write\n", ret);
+        assert(0);
+    }
     /*
     - measure mode on;
     */
-    AccelRegWrite(fd, POWER_CTL, 0x08);
+    ret = AccelRegWrite(fd, POWER_CTL, 0x08);
+    if (ret != 0)
+    {
+        printf("ERROR: 0x%02x: Failed to write\n", ret);
+        assert(0);
+    }
 }
 
 void AccelVector(int fd, Axes_t* const axes)
@@ -95,36 +110,36 @@ static uint8_t AccelRegRead(int fd, uint8_t reg, uint8_t* const value)
 {
     if (fd < 0)
     {
-        printf("Invalid file descriptor\n");
+        printf("ERROR: Invalid file descriptor\n");
         return 1;
     }
 
     if ((reg >= 0x01 && reg <= 0x1C) || reg > 0x39)
     {
-        printf("Invalid register\n");
+        printf("ERROR: Invalid register\n");
         return 2;
     }
 
-    if (SpiReadByte(fd, reg, value) < 0)
+    if (SpiReadByte(fd, reg, value) != 0)
     {
-        printf("Failed to read SPI\n");
+        printf("ERROR: Failed to read SPI\n");
         return 3;
     }
 
     return 0;
 }
 
-static uint8_t AccelRegReadBlock(int fd, uint8_t reg, uint8_t* buff, uint8_t size)
+static uint8_t AccelRegReadBlock(int fd, uint8_t reg, uint8_t* const buff, uint8_t size)
 {
     if (fd < 0)
     {
-        printf("Invalid file descriptor\n");
+        printf("ERROR: Invalid file descriptor\n");
         return 1;
     }
 
     if ((reg >= 0x01 && reg <= 0x1C) || reg > 0x39)
     {
-        printf("Invalid register\n");
+        printf("ERROR: Invalid register\n");
         return 2;
     }
 
@@ -141,19 +156,19 @@ static uint8_t AccelRegWrite(int fd, uint8_t reg, uint8_t value)
 {
     if (fd < 0)
     {
-        printf("Invalid file descriptor\n");
+        printf("ERROR: Invalid file descriptor\n");
         return 1;
     }
 
     if ((reg >= 0x01 && reg <= 0x1C) || reg > 0x39)
     {
-        printf("Invalid register\n");
+        printf("ERROR: Invalid register\n");
         return 2;
     }
 
-    if (SpiWriteByte(fd, reg, value) < 0)
+    if (SpiWriteByte(fd, reg, value) != 0)
     {
-        printf("Failed to write SPI\n");
+        printf("ERROR: Failed to write SPI\n");
         return 3;
     }
 

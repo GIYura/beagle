@@ -28,37 +28,37 @@ bool SpiInit(int fd, uint8_t mode, uint8_t bits, uint32_t speed)
 
     if (ioctl(fd, SPI_IOC_WR_MODE, &mode) < 0)
     {
-        perror("SPI: Failed to set SPI mode\n");
+        printf("ERROR SPI: Failed to set SPI mode\n");
         return false;
     }
 
     if (ioctl(fd, SPI_IOC_RD_MODE, &mode) < 0)
     {
-        perror("SPI: Failed to get SPI mode\n");
+        printf("ERROR SPI: Failed to get SPI mode\n");
         return false;
     }
 
     if (ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &bits) < 0)
     {
-        perror("SPI: Failed to set bits per word\n");
+        printf("ERROR SPI: Failed to set bits per word\n");
         return false;
     }
 
     if (ioctl(fd, SPI_IOC_RD_BITS_PER_WORD, &bits) < 0)
     {
-        perror("SPI: Failed to get bits per word\n");
+        printf("ERROR SPI: Failed to get bits per word\n");
         return false;
     }
 
     if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed) < 0)
     {
-        perror("SPI: Failed to set max speed Hz\n");
+        printf("ERROR SPI: Failed to set max speed Hz\n");
         return false;
     }
 
     if (ioctl(fd, SPI_IOC_RD_MAX_SPEED_HZ, &speed) < 0)
     {
-        perror("SPI: Failed to get max speed Hz\n");
+        printf("ERROR SPI: Failed to get max speed Hz\n");
         return false;
     }
     return true;
@@ -70,8 +70,8 @@ uint8_t SpiReadByte(int fd, uint8_t addr, uint8_t* const buffer)
 
     if (ioctl(fd, SPI_IOC_MESSAGE(1), &m_transfer) < 0)
     {
-        perror("SPI: Failed to read message\n");
-        return -1;
+        printf("ERROR SPI: Failed to read message\n");
+        return 1;
     }
 
     buffer[0] = m_receive[1];
@@ -86,8 +86,8 @@ uint8_t SpiWriteByte(int fd, uint8_t addr, uint8_t value)
 
     if (ioctl(fd, SPI_IOC_MESSAGE(1), &m_transfer) < 0)
     { 
-        perror("SPI: Failed to read message\n");
-        return -1;
+        perror("ERROR SPI: Failed to read message\n");
+        return 1;
     }
     return 0;
 }
