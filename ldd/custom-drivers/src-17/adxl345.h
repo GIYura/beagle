@@ -1,8 +1,6 @@
 #ifndef ADXL345_H
 #define ADXL345_H
 
-#define ADXL345_ADDRESS 0x53
-
 /* ADXL345 registers */
 #define DEVID       0x00
 #define BW_RATE     0x2c
