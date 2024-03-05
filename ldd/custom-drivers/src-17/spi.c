@@ -86,7 +86,7 @@ uint8_t SpiWriteByte(int fd, uint8_t addr, uint8_t value)
 
     if (ioctl(fd, SPI_IOC_MESSAGE(1), &m_transfer) < 0)
     { 
-        perror("ERROR SPI: Failed to read message\n");
+        printf("ERROR SPI: Failed to read message\n");
         return 1;
     }
     return 0;
