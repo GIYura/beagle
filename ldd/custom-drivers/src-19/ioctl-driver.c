@@ -22,6 +22,16 @@ static int testValue = 22;
 
 /**
  * @brief This function is called, when the device file is opened
+NOTE: when a user process uses the open system call to open the device file,
+the control is transferred to VFS.
+VFS opnes a file by creating a new file object and linking it to the 
+corresponding inode object.
+
+Struct inode contains all the info needed by the system to handle file.
+Используется ядром для представления файлов.
+
+Struct file is an open file, if a file opened 10 times, then there will be
+10 file objects created in the memory.
  */
 static int driver_open(struct inode *inode, struct file *filp)
 {
@@ -112,7 +122,7 @@ static int __init ModuleInit(void)
     /* initialize device file */
     cdev_init(&device, &devFops);
     
-    /* add char device to the system */
+    /* add char device to the VFS (virtual file system) */
     if (cdev_add(&device, devNumber, DEV_NUMBER_MAX) < 0)
     {
         pr_err("IOCTL: Failed to add device to kernel!\n");
