@@ -41,6 +41,7 @@ int main(int argc, char* argv[])
     if (fd < 0)
     {
         printf("Failed to close file!\n");
+        return -1;
     }   
 
     return 0;
