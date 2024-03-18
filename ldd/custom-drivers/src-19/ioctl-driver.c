@@ -24,7 +24,7 @@ static int testValue = 22;
  * @brief This function is called, when the device file is opened
 NOTE: when a user process uses the open system call to open the device file,
 the control is transferred to VFS.
-VFS opnes a file by creating a new file object and linking it to the 
+VFS opens a file by creating a new file object and linking it to the 
 corresponding inode object.
 
 Struct inode contains all the info needed by the system to handle file.
