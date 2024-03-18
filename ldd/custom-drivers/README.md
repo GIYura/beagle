@@ -18,4 +18,6 @@ src-14 - пример драйвера датчика температуры ds1
 src-15 - пример работы с шиной I2C (accelerometer adxl345);
 src-16 - пример драйвера I2C (accelerometer adxl345);
 src-17 - пример работы с шиной SPI (accelerometer adxl345);
+src-18 - пример драйвера SPI (accelerometer adxl345) /* TODO: */;
+src-19 - пример использования ioctl;
 ```
